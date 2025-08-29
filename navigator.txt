@@ -242,32 +242,50 @@ else:
     if check_local_volumetric_limits(local_axes,local_origin) == None: 
         print('>>> START POS OK')
 
-def create_sphere(
-                  radius = 8, 
-                  color=(0.75, 0, 0), 
-                  phi_resolution=100, 
-                  theta_resolution=100, 
-                  opacity=1.0):
+def create_coordinate_window():
+
+    coord_renderer = vtk.vtkRenderer()
+    coord_render_window = vtk.vtkRenderWindow()
+    coord_render_window.SetWindowName("Registered Coordinates")
+    coord_render_window.AddRenderer(coord_renderer)
+    coord_render_window.SetSize(400, 600)
+    coord_render_window.SetPosition(1100,0)
     
+    text_actor = vtk.vtkTextActor()
+    text_actor.SetInput("Registered Points:\n")
+    text_actor.GetTextProperty().SetFontSize(16)
+    text_actor.GetTextProperty().SetColor(1, 1, 1)
+    text_actor.SetPosition(0, 0)
+    
+    coord_renderer.AddActor(text_actor)
+    coord_renderer.SetBackground(0.2, 0.2, 0.2)
+    
+    return coord_render_window, text_actor
+
+coord_window, coord_text_actor = create_coordinate_window()
+
+def update_coordinate_window(text_actor, positions):
+    text = "\n\nRegistered Points:\n\n"
+    for i, pos in enumerate(positions):
+        text += f"Point {i+1}: ({pos[0]:.4f}, {pos[1]:.4f}, {pos[2]:.4f})\n"
+    
+    text_actor.SetInput(text)
+
+def create_sphere(radius, color):
     sphereSource = vtk.vtkSphereSource()
-    
     sphereSource.SetCenter(actor4_position[0],
                           actor4_position[1] ,
                           actor4_position[2])
     sphereSource.SetRadius(radius)
-    sphereSource.SetPhiResolution(phi_resolution)
-    sphereSource.SetThetaResolution(theta_resolution)
-
+    sphereSource.SetPhiResolution(100)
+    sphereSource.SetThetaResolution(100)
     mapper = vtk.vtkPolyDataMapper()
     mapper.SetInputConnection(sphereSource.GetOutputPort())
-
     sphere_actor = vtk.vtkActor()
     sphere_actor.SetMapper(mapper)
     sphere_actor.GetProperty().SetColor(*color)
-    sphere_actor.GetProperty().SetOpacity(opacity)
-    
+    sphere_actor.GetProperty().SetOpacity(1)
     sphere_actor.GetProperty().SetEdgeVisibility(False)
-    
     renderer.AddActor(sphere_actor)
     renderWindow.Render()
     
@@ -675,18 +693,23 @@ def keypress_callback(obj, event):
                 if len(cmm_position) == 0:
                     print('STATE NOT ENOUGH ELEMENTS AVAILABLE')
                 else:
-                    k = 1
-                    for k in range(len(cmm_position)):
-                        print(f'{k}: {cmm_position}')
-                        k+=1
+                    ki = 1
+                    for k in cmm_position:
+                        print(f'{ki}: {k}')
+                        ki+=1
                 
             elif key == '1':           ## REGISTER CMM POSITION
                 print('\nKEY ',key)
                 print('>>> REGISTER CMM POSITION')
                 print('get_local_current_position: ',get_local_current_position(local_axes,local_origin,actor4_position))
                 
-                renderer.AddActor(create_sphere())
+                renderer.AddActor(create_sphere(8,(0,0,0.75)))
                 cmm_position.append(get_local_current_position(local_axes,local_origin,actor4_position))
+                update_coordinate_window(coord_text_actor, cmm_position)
+                coord_window.Render()
+
+                # Make sure to show the coordinate window
+                coord_window.Render()
                 
             elif key == 'V':
                 print('\nKEY ',key)
@@ -751,7 +774,6 @@ def main():
     reader4 = vtk.vtkSTLReader()
     
     reader4.SetFileName(r'C:\Users\Castro\Desktop\Computa\Navigator\navigator-z2.stl')
-    #reader4.SetFileName(r'F:\compsi\VTK\navigator-z2.stl')
     reader4.Update()
     
     mapper4 = vtk.vtkPolyDataMapper()
@@ -763,7 +785,6 @@ def main():
 
     reader5 = vtk.vtkSTLReader()
     
-    #reader5.SetFileName(r'F:\compsi\VTK\referencesphere2.stl')
     reader5.SetFileName(r'C:\Users\Castro\Desktop\Computa\Navigator\navigator-y.stl')
     reader5.Update()
     
