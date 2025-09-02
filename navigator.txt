@@ -2,6 +2,16 @@ import vtk
 import time as t
 import numpy as np
 
+from vtkmodules.vtkFiltersSources import vtkPlaneSource
+from vtkmodules.vtkRenderingCore import (
+    vtkActor,
+    vtkPolyDataMapper,
+    vtkRenderWindow,
+    vtkRenderWindowInteractor,
+    vtkRenderer
+)
+from vtkmodules.vtkCommonColor import vtkNamedColors
+
 move_step = 1
 speed = 640
 e_sftlck_state = False
@@ -270,6 +280,28 @@ def update_coordinate_window(text_actor, positions):
         text += f"Point {i+1}: ({pos[0]:.4f}, {pos[1]:.4f}, {pos[2]:.4f})\n"
     
     text_actor.SetInput(text)
+    
+def create_plane(p0,p1,p2):
+
+    planeSource = vtk.vtkPlaneSource()
+    planeSource.SetNormal(0,1,0)
+
+    planeSource.SetCenter(p0)
+    planeSource.SetPoint1(p1)
+    planeSource.SetPoint2(p2)
+    planeSource.SetYResolution(10)
+    planeSource.SetXResolution(10)
+    planeSource.Update()
+
+    mapper = vtk.vtkPolyDataMapper() 
+    mapper.SetInputConnection(planeSource.GetOutputPort())
+    actor = vtkActor()
+    actor.SetMapper(mapper)
+    actor.GetProperty().SetColor(1,0,0)
+    
+    renderer.AddActor(actor)
+    renderWindow.Render()
+    return actor
 
 def create_sphere(radius, color):
     sphereSource = vtk.vtkSphereSource()
@@ -676,9 +708,13 @@ def keypress_callback(obj, event):
                 if occurence == 0:
                     cnc_mode_switch()                  
 
-            elif key == 'd':
+            elif key == '8':
                 print('\nKEY ',key)
-                print('>>> NO FUNCTION')
+                print('>>> CREATE PLANE')
+
+                create_plane(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-1]),
+                             path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-2]),
+                             path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-3]))
                 
             elif key == '0':
                 print('\nKEY ',key)
