@@ -12,7 +12,7 @@ from vtkmodules.vtkRenderingCore import (
 )
 from vtkmodules.vtkCommonColor import vtkNamedColors
 
-move_step = 1
+move_step = 10
 speed = 640
 e_sftlck_state = False
 scale = 1
@@ -103,11 +103,14 @@ def cnc_mode_switch():
     print('CNC MODE', cnc_mode_state)
     return cnc_mode_state
 
-def check_cnc_position_list(cmm_position):
+def check_cnc_position_list(cmm_position,type):
     cmm_position_list_length = len(cmm_position)
     
-    if cmm_position_list_length < 2:
+    if cmm_position_list_length < 2 and type == 1:                  #TYPE 1: LINE
         return 0
+    elif cmm_position_list_length < 3 and type == 2:                #TYPE 2: PLANE
+        return 0
+    
     else:
         return cmm_position
 
@@ -286,19 +289,20 @@ def create_plane(p0,p1,p2):
     planeSource = vtk.vtkPlaneSource()
     planeSource.SetNormal(0,1,0)
 
-    planeSource.SetCenter(p0)
-    planeSource.SetPoint1(p1)
+    planeSource.SetCenter(p1)
+    planeSource.SetPoint1(p0)
     planeSource.SetPoint2(p2)
-    planeSource.SetYResolution(10)
-    planeSource.SetXResolution(10)
-    planeSource.Update()
-
+    
     mapper = vtk.vtkPolyDataMapper() 
     mapper.SetInputConnection(planeSource.GetOutputPort())
     actor = vtkActor()
     actor.SetMapper(mapper)
     actor.GetProperty().SetColor(1,0,0)
-    
+    actor.GetProperty().SetOpacity(0.5)  # Transparency (0-1)
+    actor.GetProperty().SetRepresentationToWireframe()  # Wireframe mode
+    actor.GetProperty().SetRepresentationToSurface()    # Solid surface
+
+    planeSource.Update()
     renderer.AddActor(actor)
     renderWindow.Render()
     return actor
@@ -584,7 +588,7 @@ def keypress_callback(obj, event):
                 print('\nKEY L')
                 print('>>> CREATE 3DLINE')
 
-                if check_cnc_position_list(cmm_position) == 0:
+                if check_cnc_position_list(cmm_position,1) == 0:
                     print('>>> NOT ENOUGH ELEMENTS AVAILABLE')
                 else:
             
@@ -712,9 +716,12 @@ def keypress_callback(obj, event):
                 print('\nKEY ',key)
                 print('>>> CREATE PLANE')
 
-                create_plane(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-1]),
-                             path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-2]),
-                             path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-3]))
+                if check_cnc_position_list(cmm_position,2) == 0:
+                    print('>>> NOT ENOUGH ELEMENTS AVAILABLE')
+                else:
+                    create_plane(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-1]),
+                                path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-2]),
+                                path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-3]))
                 
             elif key == '0':
                 print('\nKEY ',key)
@@ -765,7 +772,7 @@ def keypress_callback(obj, event):
             actor2.SetPosition(*actor2_position)
             actor3.SetPosition(*actor3_position)
             actor4.SetPosition(*actor4_position)
-            actor5.SetPosition(*actor5_position)
+            #actor5.SetPosition(*actor5_position)
             renderWindow.Render()
 
 def main():
@@ -848,7 +855,7 @@ def main():
     renderer.AddActor(actor2)
     renderer.AddActor(actor3)
     renderer.AddActor(actor4)
-    renderer.AddActor(actor5)
+    #renderer.AddActor(actor5)
 
     renderer.SetBackground(0, 0, 0)
     actor3.SetScale(scale,scale,scale)
