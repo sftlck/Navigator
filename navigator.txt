@@ -3,6 +3,8 @@ import time as t
 import numpy as np
 
 from vtkmodules.vtkFiltersSources import vtkPlaneSource
+
+from vtkmodules.vtkFiltersSources import vtkRegularPolygonSource
 from vtkmodules.vtkRenderingCore import (
     vtkActor,
     vtkPolyDataMapper,
@@ -15,7 +17,7 @@ from vtkmodules.vtkCommonColor import vtkNamedColors
 move_step = 10
 speed = 640
 e_sftlck_state = False
-scale = 1
+scale = 0.75
 override_pos_limits_state = 0
 user_axis_control = True
 i = 0
@@ -24,37 +26,38 @@ cnc_mode_state = False
 show_volume_bounds = True
 cmm_position = [] 
 
-global_volumetric_limits = [309,       # -X
-                            1110,      # +X
-                            339.5,     # -Y
-                            1740,      # +Y
-                            793,       # -Z
-                            1504]      # +Z
+global_volumetric_limits = [190,       # -X
+                            815,      # +X
+                            279,     # -Y
+                            1400,      # +Y
+                            600,       # -Z
+                            1150]      # +Z
 
 actor1_position = [0,0,0]                               ## desempeno
 
-actor4_position = [315,          ## cabeçote
+actor4_position = [315,                                 ## cabeçote
                    1039.5,
-                   1278]                            #### POSIÇÃO INICIAL EM Z
+                   1080]                                #### POSIÇÃO INICIAL EM Z
 
 actor3_position = [actor4_position[0]   -   310,              ## ponte
-                   actor4_position[1]   +   60.5,                           #### POSIÇÃO INICIAL EM Y
+                   actor4_position[1]   +   60,                           #### POSIÇÃO INICIAL EM Y
                    actor4_position[2]   -   480]
 
-actor2_position = [actor4_position[0]   -   190,            ## capa do z    #### POSIÇÃO INICIAL EM X
-                   actor4_position[1]   +   469,
-                   actor4_position[2]   +   400]
+actor2_position = [actor4_position[0]   -   150,            ## capa do z    #### POSIÇÃO INICIAL EM X
+                   actor4_position[1]   +   360,
+                   actor4_position[2]   +   180]
 
 actor5_position = [1000,                                ## esfera
                    1000, 
                    actor3_position[2]   +   210]
 
-local_volumetric_limits = [0        ,     # -X
+local_volumetric_limits = [85        ,     # -X
                            826      ,     # +X
                            -1365.5  ,     # -Y
                            5        ,     # +Y
-                           -671     ,     # -Z
+                           -540        ,     # -Z
                            5]             # +Z
+
 
 local_safe_limits = [local_volumetric_limits[0]     +   5      ,   ## deslocamento automático após e_sftlck_state False em check_local_volumetric_limits
                      local_volumetric_limits[1]     -   5      ,
@@ -259,13 +262,13 @@ def create_coordinate_window():
 
     coord_renderer = vtk.vtkRenderer()
     coord_render_window = vtk.vtkRenderWindow()
-    coord_render_window.SetWindowName("Registered Coordinates")
+    coord_render_window.SetWindowName("Features")
     coord_render_window.AddRenderer(coord_renderer)
     coord_render_window.SetSize(400, 600)
     coord_render_window.SetPosition(1100,0)
     
     text_actor = vtk.vtkTextActor()
-    text_actor.SetInput("Registered Points:\n")
+    text_actor.SetInput("Registered points:\n")
     text_actor.GetTextProperty().SetFontSize(16)
     text_actor.GetTextProperty().SetColor(1, 1, 1)
     text_actor.SetPosition(0, 0)
@@ -283,11 +286,78 @@ def update_coordinate_window(text_actor, positions):
         text += f"Point {i+1}: ({pos[0]:.4f}, {pos[1]:.4f}, {pos[2]:.4f})\n"
     
     text_actor.SetInput(text)
+
+    colors = vtkNamedColors()
+
+def calculate_avg_point(p0,p1,p2):
+
+    print(">>> CALCULATE AVERAGE POINT",p0,p1,p2)
+
+    x = (p0[0]+p1[0]+p2[0])/3
+    y = (p0[1]+p1[1]+p2[1])/3
+    z = (p0[2]+p1[2]+p2[2])/3
+
+    print(">>> AVERAGE X", x)
+    print(">>> AVERAGE Y", y)
+    print(">>> AVERAGE Z", z)
+
+    return x,y,z
+
+def create_circle(p0,p1,p2):
+
+    polygonSource = vtkRegularPolygonSource()
+    polygonSource.GeneratePolygonOff()
+    polygonSource.SetNumberOfSides(50)                                           
+    polygonSource.SetCenter(calculate_avg_point(p0,p1,p2))                                   
+    polygonSource.SetRadius(max(calculate_linear_distance(p0,p1),
+                                calculate_linear_distance(p1,p2),
+                                calculate_linear_distance(p2,p0))/2)
+    #create_sphere(calculate_avg_point(p0,p1,p2),8,(1,1,1))
+    polygonSource.SetNormal(create_plane(p0,p1,p2,0)[1])
+    polygonSource.Update()
+
+    print("DISTANCE P0-P1",calculate_linear_distance(p0,p1))
+    print("DISTANCE P1-P2",calculate_linear_distance(p1,p2))
     
-def create_plane(p0,p1,p2):
+    mapper = vtkPolyDataMapper()
+    mapper.SetInputConnection(polygonSource.GetOutputPort())
+
+    actor = vtkActor()
+    actor.SetMapper(mapper)
+    actor.GetProperty().SetColor(1,1,1)
+
+    renderer.AddActor(actor)
+    renderWindow.Render()
+    return actor
+
+def create_plane(p0,p1,p2,opacity):
 
     planeSource = vtk.vtkPlaneSource()
-    planeSource.SetNormal(0,1,0)
+    planeSource.SetCenter(p1)
+    planeSource.SetPoint1(p0)
+    planeSource.SetPoint2(p2)
+    
+    mapper = vtk.vtkPolyDataMapper() 
+    mapper.SetInputConnection(planeSource.GetOutputPort())
+    actor = vtkActor()
+    actor.SetMapper(mapper)
+    actor.GetProperty().SetColor(1,0,0)
+    actor.GetProperty().SetOpacity(opacity)                     
+    actor.GetProperty().SetRepresentationToWireframe()          
+    actor.GetProperty().SetRepresentationToSurface()            
+
+    planeNormal = planeSource.GetNormal()
+    planeSource.Update()
+    renderer.AddActor(actor)
+    print(">>> PLANE NORMAL:", planeNormal)
+
+    renderWindow.Render()
+    return actor, planeNormal
+
+"""def create_plane(p0,p1,p2,opacity):
+
+    planeSource = vtk.vtkPlaneSource()
+    planeNormal = planeSource.GetNormal()
 
     planeSource.SetCenter(p1)
     planeSource.SetPoint1(p0)
@@ -298,20 +368,19 @@ def create_plane(p0,p1,p2):
     actor = vtkActor()
     actor.SetMapper(mapper)
     actor.GetProperty().SetColor(1,0,0)
-    actor.GetProperty().SetOpacity(0.5)  # Transparency (0-1)
+    actor.GetProperty().SetOpacity(opacity)  # Transparency (0-1)
     actor.GetProperty().SetRepresentationToWireframe()  # Wireframe mode
     actor.GetProperty().SetRepresentationToSurface()    # Solid surface
 
     planeSource.Update()
     renderer.AddActor(actor)
     renderWindow.Render()
-    return actor
 
-def create_sphere(radius, color):
+    return actor, planeNormal
+"""
+def create_sphere(center, radius, color):
     sphereSource = vtk.vtkSphereSource()
-    sphereSource.SetCenter(actor4_position[0],
-                          actor4_position[1] ,
-                          actor4_position[2])
+    sphereSource.SetCenter(center)
     sphereSource.SetRadius(radius)
     sphereSource.SetPhiResolution(100)
     sphereSource.SetThetaResolution(100)
@@ -583,7 +652,7 @@ def keypress_callback(obj, event):
                 actor4_position = translate[0]
                 actor3_position = translate[1]
                 actor2_position = translate[2]
-                
+    
             elif key == 'L':        ## CREATE 3D LINE
                 print('\nKEY L')
                 print('>>> CREATE 3DLINE')
@@ -712,6 +781,17 @@ def keypress_callback(obj, event):
                 if occurence == 0:
                     cnc_mode_switch()                  
 
+            elif key == 'c':
+                print('\nKEY ',key)
+                print('>>> CREATE CIRCLE')
+
+                if check_cnc_position_list(cmm_position,2) == 0:
+                    print('>>> NOT ENOUGH ELEMENTS AVAILABLE')
+                else:
+                    create_circle(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-1]),
+                                path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-2]),
+                                path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-3]))
+
             elif key == '8':
                 print('\nKEY ',key)
                 print('>>> CREATE PLANE')
@@ -721,7 +801,8 @@ def keypress_callback(obj, event):
                 else:
                     create_plane(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-1]),
                                 path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-2]),
-                                path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-3]))
+                                path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-3]),
+                                0.5)
                 
             elif key == '0':
                 print('\nKEY ',key)
@@ -746,14 +827,23 @@ def keypress_callback(obj, event):
                 print('>>> REGISTER CMM POSITION')
                 print('get_local_current_position: ',get_local_current_position(local_axes,local_origin,actor4_position))
                 
-                renderer.AddActor(create_sphere(8,(0,0,0.75)))
+                renderer.AddActor(create_sphere((actor4_position[0],
+                                                 actor4_position[1],
+                                                 actor4_position[2]),
+                                                 4,
+                                                 (0,0,0.75)))
                 cmm_position.append(get_local_current_position(local_axes,local_origin,actor4_position))
                 update_coordinate_window(coord_text_actor, cmm_position)
                 coord_window.Render()
-
-                # Make sure to show the coordinate window
-                coord_window.Render()
+            
+            elif key == '5':           ## CREATE CENTER SPHERE
+                print('\nKEY ',key)
+                print('>>> CREATE CENTER SPHERE')
                 
+                renderer.AddActor(create_sphere(actor5_position,
+                                                25,
+                                                (0.92,0.91,0.86)))
+
             elif key == 'V':
                 print('\nKEY ',key)
                 print('STATE TOGGLE SHOW LOCAL VOLUMETRIC LIMITS')
