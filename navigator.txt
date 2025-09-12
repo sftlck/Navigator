@@ -198,6 +198,7 @@ def sync_actors_movement(actor4_position,actor3_position,actor2_position,pos):
                        actor4_position[1]      +   60.5,                           #### POSIÇÃO INICIAL EM Y
                        actor3_position[2]]
 
+
     actor2_position = [actor4_position[0]   -   190,            ## capa do z    #### POSIÇÃO INICIAL EM X
                        actor4_position[1]      +   469,
                        actor2_position[2]]
@@ -331,11 +332,12 @@ def create_circle(p0,p1,p2):
 
     polygonSource = vtkRegularPolygonSource()
     polygonSource.GeneratePolygonOff()
-    polygonSource.SetNumberOfSides(5000)                                           
-    polygonSource.SetCenter(calculate_avg_point(p0,p1,p2))                                   
-    polygonSource.SetRadius(max(calculate_linear_distance(p0,p1),
-                                calculate_linear_distance(p1,p2),
-                                calculate_linear_distance(p2,p0))/2)
+    polygonSource.SetNumberOfSides(360)                                           
+    center = calculate_avg_point(p0,p1,p2)
+    polygonSource.SetCenter(center)       
+    polygonSource.SetRadius((calculate_linear_distance(p0,center)+
+                            calculate_linear_distance(p1,center)+
+                            calculate_linear_distance(p2,center))/3)
     #create_sphere(calculate_avg_point(p0,p1,p2),8,(1,1,1))
     polygonSource.SetNormal(create_plane(p0,p1,p2,0)[1])
     polygonSource.Update()
@@ -384,30 +386,6 @@ def create_plane(p0,p1,p2,opacity):
     renderWindow.Render()
     return actor, planeNormal
 
-"""def create_plane(p0,p1,p2,opacity):
-
-    planeSource = vtk.vtkPlaneSource()
-    planeNormal = planeSource.GetNormal()
-
-    planeSource.SetCenter(p1)
-    planeSource.SetPoint1(p0)
-    planeSource.SetPoint2(p2)
-    
-    mapper = vtk.vtkPolyDataMapper() 
-    mapper.SetInputConnection(planeSource.GetOutputPort())
-    actor = vtkActor()
-    actor.SetMapper(mapper)
-    actor.GetProperty().SetColor(1,0,0)
-    actor.GetProperty().SetOpacity(opacity)  # Transparency (0-1)
-    actor.GetProperty().SetRepresentationToWireframe()  # Wireframe mode
-    actor.GetProperty().SetRepresentationToSurface()    # Solid surface
-
-    planeSource.Update()
-    renderer.AddActor(actor)
-    renderWindow.Render()
-
-    return actor, planeNormal
-"""
 def create_sphere(center, radius, color):
     sphereSource = vtk.vtkSphereSource()
     sphereSource.SetCenter(center)
@@ -582,7 +560,6 @@ def keypress_callback(obj, event):
                         
             elif key == 'Down':                                             ## MOVER -Y
                 
-                
                 if override_pos_limits_state == 1:
                     actor4_position[1] -= move_step                         ## avanço
                     actor3_position[1] -= move_step
@@ -634,38 +611,89 @@ def keypress_callback(obj, event):
                         check_global_volumetric_limits(actor4_position)
                         actor4_position[2] += move_step              
 
-            elif key == 'S':        ## TRANSLATE TO SPHERE
-                
-                print('\nKEY S')
-                local_current_position = get_local_current_position(local_axes,local_origin,actor4_position)
-                translate = translate_in_volume(actor4_position,
-                                                actor3_position,
-                                                actor2_position,
-                                                get_local_current_position(local_axes,local_origin,actor5_position)[0],
-                                                get_local_current_position(local_axes,local_origin,actor5_position)[1],
-                                                get_local_current_position(local_axes,local_origin,actor5_position)[2]  +   20)
-                
-                actor4_position = translate[0]
-                actor3_position = translate[1]
-                actor2_position = translate[2]
+            elif key == '2':                                             ## INPUT COMMAND
+                print("key ",key)
+                command = input("> NAVIGATOR: ")
 
-            elif key == '4':
-                print('\nKEY 4')
-                
-            elif key == '9':
+                if command == 'SPHERE' or command == 'sphere':        ## TRANSLATE TO SPHERE
+                    
+                    print('\nCOMMAND:',command)
+                    local_current_position = get_local_current_position(local_axes,local_origin,actor4_position)
+                    translate = translate_in_volume(actor4_position,
+                                                    actor3_position,
+                                                    actor2_position,
+                                                    get_local_current_position(local_axes,local_origin,actor5_position)[0],
+                                                    get_local_current_position(local_axes,local_origin,actor5_position)[1],
+                                                    get_local_current_position(local_axes,local_origin,actor5_position)[2]  +   20)
+                    
+                    actor4_position = translate[0]
+                    actor3_position = translate[1]
+                    actor2_position = translate[2]
 
-                print('\nKEY 9')
-                local_current_position = get_local_current_position(local_axes,local_origin,actor4_position)
-                translate = translate_in_volume(actor4_position,
-                                                actor3_position,
-                                                actor2_position,
-                                                float(input('x:')),
-                                                float(input('y:')),
-                                                float(input('z:')))
+                if command == 'MOVETO' or command == 'moveto':
+
+                    print('\nCOMMAND:',command)
+                    
+                    local_current_position = get_local_current_position(local_axes,local_origin,actor4_position)
+                    translate = translate_in_volume(actor4_position,
+                                                    actor3_position,
+                                                    actor2_position,
+                                                    float(input('x:')),
+                                                    float(input('y:')),
+                                                    float(input('z:')))
+                    
+                    actor4_position = translate[0]
+                    actor3_position = translate[1]
+                    actor2_position = translate[2]
+
+                if command == 'CIRCLE' or command == 'circle':
+                    print('\nKEY ',key)
+                    print('>>> CREATE CIRCLE')
+
+                    if check_cnc_position_list(cmm_position,2) == 0:
+                        print('>>> NOT ENOUGH ELEMENTS AVAILABLE')
+                    else:
+                        
+                        circle = create_circle(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-1]),
+                                    path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-2]),
+                                    path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-3]))
+                    
+                    
+                if command == 'CIRCLECNC' or command == 'circlecnc':
+                    print('\nKEY ',key)
+                    print('>>> CREATE CIRCLE')
+
+                    if check_cnc_position_list(cmm_position,2) == 0:
+                        print('>>> NOT ENOUGH ELEMENTS AVAILABLE')
+                    else:
+                        
+                        circle = create_circle(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-1]),
+                                    path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-2]),
+                                    path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-3]))
+                    
+                        local_current_position = get_local_current_position(local_axes,local_origin,actor4_position)
+                        
+                        for i in circle[1]:
+                            translate = translate_in_volume(actor4_position,
+                                                            actor3_position,
+                                                            actor2_position,
+                                                            (get_local_current_position(local_axes,local_origin,i[0])[0]),
+                                                            (get_local_current_position(local_axes,local_origin,i[1])[1]),
+                                                            (get_local_current_position(local_axes,local_origin,i[2])[2]))
+                            actor4_position = translate[0]
+                            actor3_position = translate[1]
+                            actor2_position = translate[2]
+                            renderWindow.Render()
+
+                            #t.sleep(0.01)
+                                        
+                        actor4_position = translate[0]
+                        actor3_position = translate[1]
+                        actor2_position = translate[2]
                 
-                actor4_position = translate[0]
-                actor3_position = translate[1]
-                actor2_position = translate[2]
+                else:
+                    print(">>> UNKNOWN COMMAND")
+                    print(">>> EXIT COMMAND INPUT MODE")
 
             elif key == 'O':        ## GO TO CENTER VOLUMETRIC LIMITS
 
@@ -682,36 +710,7 @@ def keypress_callback(obj, event):
                 actor3_position = translate[1]
                 actor2_position = translate[2]
             
-            elif key == 'c':
-                print('\nKEY ',key)
-                print('>>> CREATE CIRCLE')
-
-                if check_cnc_position_list(cmm_position,2) == 0:
-                    print('>>> NOT ENOUGH ELEMENTS AVAILABLE')
-                else:
-                    
-                    circle = create_circle(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-1]),
-                                path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-2]),
-                                path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-3]))
-                
-                    local_current_position = get_local_current_position(local_axes,local_origin,actor4_position)
-                    
-                    for i in circle[1]:
-                        translate = translate_in_volume(actor4_position,
-                                                        actor3_position,
-                                                        actor2_position,
-                                                        (get_local_current_position(local_axes,local_origin,i[0])[0]),
-                                                        (get_local_current_position(local_axes,local_origin,i[1])[1]),
-                                                        (get_local_current_position(local_axes,local_origin,i[2])[2]))
-                        actor4_position = translate[0]
-                        actor3_position = translate[1]
-                        actor2_position = translate[2]
-
-                        #t.sleep(0.01)
-                                    
-                    actor4_position = translate[0]
-                    actor3_position = translate[1]
-                    actor2_position = translate[2]
+            
     
             elif key == 'L':        ## CREATE 3D LINE
                 print('\nKEY L')
