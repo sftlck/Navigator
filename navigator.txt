@@ -7,10 +7,7 @@ from vtkmodules.vtkFiltersSources import vtkPlaneSource
 from vtkmodules.vtkFiltersSources import vtkRegularPolygonSource
 from vtkmodules.vtkRenderingCore import (
     vtkActor,
-    vtkPolyDataMapper,
-    vtkRenderWindow,
-    vtkRenderWindowInteractor,
-    vtkRenderer
+    vtkPolyDataMapper
 )
 from vtkmodules.vtkCommonColor import vtkNamedColors
 
@@ -26,19 +23,19 @@ cnc_mode_state = False
 show_volume_bounds = True
 cmm_position = [] 
 
-global_volumetric_limits = [-1000,       # -X
-                            1000,      # +X
-                            -1000,     # -Y
-                            2000,      # +Y
-                            200,       # -Z
-                            1500]      # +Z
+global_volumetric_limits = [230,      # -X
+                            775,      # +X
+                            280,    # -Y
+                            1260,     # +Y
+                            600,      # -Z
+                            1130]     # +Z
 
-local_volumetric_limits = [-1000        ,     # -X
-                           1000      ,     # +X
-                           -1500  ,     # -Y
-                           100        ,     # +Y
-                           -800        ,     # -Z
-                           300]             # +Z
+local_volumetric_limits = [0        ,     # -X
+                           755      ,     # +X
+                           -1260  ,     # -Y
+                           5        ,     # +Y
+                           -540        ,     # -Z
+                           5]             # +Z
 
 actor1_position = [0,0,0]                               ## desempeno
 
@@ -57,9 +54,6 @@ actor2_position = [actor4_position[0]   -   150,            ## capa do z    ####
 actor5_position = [1000,                                ## esfera
                    1000, 
                    actor3_position[2]   +   210]
-
-
-
 
 local_safe_limits = [local_volumetric_limits[0]     +   5      ,   ## deslocamento automático após e_sftlck_state False em check_local_volumetric_limits
                      local_volumetric_limits[1]     -   5      ,
@@ -865,6 +859,9 @@ def keypress_callback(obj, event):
                       (round(abs(local_volumetric_limits[2]/100),0)*100), ',',
                       (round(abs(local_volumetric_limits[4]/100),0)*100), ')',
                       )
+                
+                print('STATE LOCAL VOLUMETRIC LIMITS: ', local_volumetric_limits)
+                print('STATE LOCAL SYS ORIGIN: ', local_origin)
                 print('STATE CMM POSITION LIST: ')
                 
                 if len(cmm_position) == 0:
