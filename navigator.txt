@@ -7,7 +7,7 @@ from vtkmodules.vtkFiltersSources import vtkPlaneSource
 from vtkmodules.vtkFiltersSources import vtkRegularPolygonSource
 from vtkmodules.vtkRenderingCore import (
     vtkActor,
-    vtkPolyDataMapper
+    vtkPolyDataMapper,
 )
 from vtkmodules.vtkCommonColor import vtkNamedColors
 
@@ -343,7 +343,7 @@ def create_circle(p0,p1,p2):
     mapper.SetInputConnection(polygonSource.GetOutputPort())
     actor = vtkActor()
     actor.SetMapper(mapper)
-    actor.GetProperty().SetColor(1,1,1)
+    actor.GetProperty().SetColor(39/255,221/255,232/255)
 
     poly_data = polygonSource.GetOutput()
     points = poly_data.GetPoints()
@@ -368,8 +368,10 @@ def create_plane(p0,p1,p2,opacity):
     mapper.SetInputConnection(planeSource.GetOutputPort())
     actor = vtkActor()
     actor.SetMapper(mapper)
-    actor.GetProperty().SetColor(1,0,0)
+    actor.GetProperty().SetColor(39/255,221/255,232/255)
     actor.GetProperty().SetOpacity(opacity)                     
+    #actor.GetProperty().SetEdgeColor(39/255,221/255,232/255)
+
     actor.GetProperty().SetRepresentationToWireframe()          
     actor.GetProperty().SetRepresentationToSurface()            
 
@@ -473,7 +475,7 @@ def create_3dline(p0, p1):
 
     actor = vtk.vtkActor()
     actor.SetMapper(mapper)
-    actor.GetProperty().SetColor(1, 0, 0)
+    actor.GetProperty().SetColor(39/255,221/255,232/255)
     actor.GetProperty().SetLineWidth(2)
 
     renderer.AddActor(actor)
@@ -687,7 +689,26 @@ def keypress_callback(obj, event):
                         actor4_position = translate[0]
                         actor3_position = translate[1]
                         actor2_position = translate[2]
-                
+
+                if command == 'RECALL' or command == 'recall':
+                        local_current_position = get_local_current_position(local_axes,local_origin,actor4_position)
+                        
+                        for i in cmm_position:
+                            translate = translate_in_volume(actor4_position,
+                                                            actor3_position,
+                                                            actor2_position,
+                                                            (i)[0],
+                                                            (i)[1],
+                                                            (i)[2])
+
+                            actor4_position = translate[0]
+                            actor3_position = translate[1]
+                            actor2_position = translate[2]
+                            renderWindow.Render()
+    
+                        actor4_position = translate[0]
+                        actor3_position = translate[1]
+                        actor2_position = translate[2]
                 else:
                     print(">>> UNKNOWN COMMAND")
                     print(">>> EXIT COMMAND INPUT MODE")
@@ -921,7 +942,7 @@ def main():
     global actor2, actor3, actor4, actor5, renderWindow, renderer
 
     reader1 = vtk.vtkSTLReader()
-    reader1.SetFileName(r'C:\Users\Castro\Desktop\Computa\Navigator\navigatorbase3.stl')
+    reader1.SetFileName(r'navigatorbase3.stl')
     #reader1.SetFileName(r'F:\compsi\VTK\navigatorbase3.stl')
     reader1.Update()
 
@@ -934,7 +955,7 @@ def main():
 
     reader2 = vtk.vtkSTLReader()
     
-    reader2.SetFileName(r'C:\Users\Castro\Desktop\Computa\Navigator\navigator-z.stl')
+    reader2.SetFileName(r'navigator-z.stl')
     #reader2.SetFileName(r'F:\compsi\VTK\navigator-z.stl')
     reader2.Update()
 
@@ -946,7 +967,7 @@ def main():
     actor2.SetPosition(*actor2_position)
 
     reader3 = vtk.vtkSTLReader()
-    reader3.SetFileName(r'C:\Users\Castro\Desktop\Computa\Navigator\navigator-y.stl')
+    reader3.SetFileName(r'navigator-y.stl')
     reader3.Update()
     
     mapper3 = vtk.vtkPolyDataMapper()
@@ -958,7 +979,7 @@ def main():
 
     reader4 = vtk.vtkSTLReader()
     
-    reader4.SetFileName(r'C:\Users\Castro\Desktop\Computa\Navigator\navigator-z2.stl')
+    reader4.SetFileName(r'navigator-z2.stl')
     reader4.Update()
     
     mapper4 = vtk.vtkPolyDataMapper()
@@ -970,7 +991,7 @@ def main():
 
     reader5 = vtk.vtkSTLReader()
     
-    reader5.SetFileName(r'C:\Users\Castro\Desktop\Computa\Navigator\navigator-y.stl')
+    reader5.SetFileName(r'navigator-y.stl')
     reader5.Update()
     
     mapper5 = vtk.vtkPolyDataMapper()
@@ -998,8 +1019,16 @@ def main():
     renderer.AddActor(actor3)
     renderer.AddActor(actor4)
     #renderer.AddActor(actor5)
+      
+    colors = vtk.vtkNamedColors()
 
-    renderer.SetBackground(0, 0, 0)
+    renderer.GradientBackgroundOn()
+    
+    color_bottom = [204/255.0, 204/255.0, 204/255.0]
+    color_top = [59/255.0, 92/255.0, 139/255.0]     
+    renderer.SetBackground(*color_bottom)
+    renderer.SetBackground2(*color_top)
+
     actor3.SetScale(scale,scale,scale)
     actor1.SetScale(scale,scale,scale)
     actor1.RotateZ(90)
