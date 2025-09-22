@@ -25,14 +25,14 @@ cmm_position = []
 
 global_volumetric_limits = [230,      # -X
                             775,      # +X
-                            280,    # -Y
-                            1260,     # +Y
+                            170,    # -Y
+                            1200,     # +Y
                             600,      # -Z
                             1130]     # +Z
 
 local_volumetric_limits = [0        ,     # -X
                            755      ,     # +X
-                           -1260  ,     # -Y
+                           -1005  ,     # -Y
                            5        ,     # +Y
                            -540        ,     # -Z
                            5]             # +Z
@@ -324,6 +324,7 @@ def create_circle(p0,p1,p2):
     renderWindow.Render()
     return actor
 """
+
 def create_circle(p0,p1,p2):
 
     polygonSource = vtkRegularPolygonSource()
@@ -376,13 +377,14 @@ def create_plane(p0,p1,p2,opacity):
     actor.GetProperty().SetRepresentationToSurface()            
 
     planeNormal = planeSource.GetNormal()
-    #create_sphere(planeNormal,10,(1,1,1))
+    
+    planeoutput = planeSource
     planeSource.Update()
     renderer.AddActor(actor)
     print(">>> PLANE NORMAL:", planeNormal)
 
     renderWindow.Render()
-    return actor, planeNormal
+    return actor, planeNormal, planeoutput
 
 def create_sphere(center, radius, color):
     sphereSource = vtk.vtkSphereSource()
@@ -465,23 +467,26 @@ def translate_in_volume(actor4_position,actor3_position,actor2_position,x,y,z): 
     return actor4_position,actor3_position,actor2_position
 
 def create_3dline(p0, p1):
-    line_source = vtk.vtkLineSource()
-    line_source.SetPoint1(p0)
-    line_source.SetPoint2(p1)
-    line_source.Update()
+    linesource = vtk.vtkLineSource()
+    linesource.SetPoint1(p0)
+    linesource.SetPoint2(p1)
+    linesource.Update()
 
     mapper = vtk.vtkPolyDataMapper()
-    mapper.SetInputConnection(line_source.GetOutputPort())
+    mapper.SetInputConnection(linesource.GetOutputPort())
 
     actor = vtk.vtkActor()
     actor.SetMapper(mapper)
     actor.GetProperty().SetColor(39/255,221/255,232/255)
     actor.GetProperty().SetLineWidth(2)
 
+
+    lineoutput = linesource.GetOutput()
+
     renderer.AddActor(actor)
     renderWindow.Render()
     
-    return actor
+    return actor, lineoutput
 
 def keypress_callback(obj, event):
         global actor2_position, actor3_position, actor4_position, actor5_position, local_volumetric_limits, global_volumetric_limits
@@ -609,6 +614,28 @@ def keypress_callback(obj, event):
                     if check_local_volumetric_limits(local_axes,local_origin) == 1:
                         check_global_volumetric_limits(actor4_position)
                         actor4_position[2] += move_step              
+
+            elif key == '3':                                             ## INPUT COMMAND
+                print("key ",key)
+                print(">>> BASE SYS COORDINATE TRANSFORM: ")
+
+                vplane = create_plane(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-1]),
+                                path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-2]),
+                                path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-3]),
+                                0.5)[2]
+                
+                line = create_3dline(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-4]),
+                              path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-5]))[1]
+
+                cutter = vtk.vtkCutter()
+                cutter.SetCutFunction(vtk.vtkPlane())
+                cutter.SetInputData(line)
+                cutter.Update()
+                cutterout = cutter.GetOutput()
+                print('GetNumberOfPoints: ',cutterout.GetNumberOfPoints())
+                print(cutterout.GetPoint(0))
+
+                renderWindow.Render()
 
             elif key == '2':                                             ## INPUT COMMAND
                 print("key ",key)
