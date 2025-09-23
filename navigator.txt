@@ -3,7 +3,7 @@ import time as t
 import numpy as np
 
 from vtkmodules.vtkFiltersSources import vtkPlaneSource
-
+from vtkmodules.vtkFiltersCore import vtkFeatureEdges
 from vtkmodules.vtkFiltersSources import vtkRegularPolygonSource
 from vtkmodules.vtkRenderingCore import (
     vtkActor,
@@ -336,7 +336,7 @@ def create_circle(p0,p1,p2):
                             calculate_linear_distance(p1,center)+
                             calculate_linear_distance(p2,center))/3)
     #create_sphere(calculate_avg_point(p0,p1,p2),8,(1,1,1))
-    polygonSource.SetNormal(create_plane(p0,p1,p2,0)[1])
+    polygonSource.SetNormal(create_plane(p0,p1,p2,0,0)[1])
     polygonSource.Update()
     #print("DISTANCE P0-P1",calculate_linear_distance(p0,p1))
     #print("DISTANCE P1-P2",calculate_linear_distance(p1,p2))
@@ -358,33 +358,75 @@ def create_circle(p0,p1,p2):
     renderWindow.Render()
     return actor, circumference_points
 
-def create_plane(p0,p1,p2,opacity):
-
+def create_plane(p0, p1, p2, opacity,line):
     planeSource = vtk.vtkPlaneSource()
     planeSource.SetCenter(p1)
     planeSource.SetPoint1(p0)
     planeSource.SetPoint2(p2)
-    
+
     mapper = vtk.vtkPolyDataMapper() 
     mapper.SetInputConnection(planeSource.GetOutputPort())
     actor = vtkActor()
     actor.SetMapper(mapper)
-    actor.GetProperty().SetColor(39/255,221/255,232/255)
-    actor.GetProperty().SetOpacity(opacity)                     
-    #actor.GetProperty().SetEdgeColor(39/255,221/255,232/255)
-
-    actor.GetProperty().SetRepresentationToWireframe()          
-    actor.GetProperty().SetRepresentationToSurface()            
-
-    planeNormal = planeSource.GetNormal()
+    #actor.GetProperty().SetColor(39/255,221/255,232/255)
+    actor.GetProperty().SetOpacity(0)
     
-    planeoutput = planeSource
+    wireframeMapper = vtk.vtkPolyDataMapper()
+    wireframeMapper.SetInputConnection(planeSource.GetOutputPort())
+    wireframeActor = vtkActor()
+    wireframeActor.SetMapper(wireframeMapper)
+    wireframeActor.GetProperty().SetRepresentationToWireframe()
+    wireframeActor.GetProperty().SetColor(39/255,221/255,232/255) 
+    wireframeActor.GetProperty().SetLineWidth(2)
+    wireframeActor.GetProperty().SetLighting(False)
+                
+    center = calculate_avg_point(p0,p1,p2)     
+    #create_sphere(center,2,(1,1,1))
+    
+    planeNormal = planeSource.GetNormal()    
     planeSource.Update()
-    renderer.AddActor(actor)
-    print(">>> PLANE NORMAL:", planeNormal)
 
+    if line == 1:
+        lineSource = vtk.vtkLineSource()
+        lineSource.SetPoint1(center)
+
+        featureEdges = vtkFeatureEdges()
+        featureEdges.SetInputConnection(planeSource.GetOutputPort())
+        featureEdges.BoundaryEdgesOn()
+        featureEdges.FeatureEdgesOff()
+        featureEdges.ManifoldEdgesOff()
+        featureEdges.NonManifoldEdgesOff()
+
+        edgeMapper = vtk.vtkPolyDataMapper()
+        edgeMapper.SetInputConnection(featureEdges.GetOutputPort())
+
+        edgeActor = vtk.vtkActor()
+        edgeActor.SetMapper(edgeMapper)
+        edgeActor.GetProperty().SetColor(1,1,1)  # Red color
+        edgeActor.GetProperty().SetLineWidth(0.5)
+       
+        end_point = [
+            center[0] + planeNormal[0] * 50,
+            center[1] + planeNormal[1] * 50, 
+            center[2] + planeNormal[2] * 50
+        ]
+        lineSource.SetPoint2(end_point)
+        
+        lineMapper = vtk.vtkPolyDataMapper()
+        lineMapper.SetInputConnection(lineSource.GetOutputPort())
+        
+        lineActor = vtk.vtkActor()
+        lineActor.SetMapper(lineMapper)
+        lineActor.GetProperty().SetColor(1,1,1)
+        lineActor.GetProperty().SetLineWidth(1)
+        renderer.AddActor(edgeActor)
+        renderer.AddActor(lineActor)
+
+    renderer.AddActor(actor)
+    renderer.AddActor(wireframeActor)
+    print(">>> PLANE NORMAL:", planeNormal)
     renderWindow.Render()
-    return actor, planeNormal, planeoutput
+    return actor, planeNormal, planeSource
 
 def create_sphere(center, radius, color):
     sphereSource = vtk.vtkSphereSource()
@@ -622,7 +664,8 @@ def keypress_callback(obj, event):
                 vplane = create_plane(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-1]),
                                 path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-2]),
                                 path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-3]),
-                                0.5)[2]
+                                0.5,
+                                0)[2]
                 
                 line = create_3dline(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-4]),
                               path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-5]))[1]
@@ -897,7 +940,8 @@ def keypress_callback(obj, event):
                     create_plane(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-1]),
                                 path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-2]),
                                 path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-3]),
-                                0.5)
+                                0.5,
+                                1)
                 
             elif key == '0':
                 print('\nKEY ',key)
