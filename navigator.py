@@ -358,11 +358,11 @@ def create_circle(p0,p1,p2):
     renderWindow.Render()
     return actor, circumference_points
 
-def create_axis():
+def create_axis(center,rotatex):
     
     print('>>> INSERT AXIS')
     axes2 = vtk.vtkAxesActor()
-    axes2.SetTotalLength(scale*500, scale*500, scale*500)  # tamanho dos eixos
+    axes2.SetTotalLength(scale*500, scale*500, scale*500)
     axes2.SetShaftTypeToCylinder()
     axes2.SetCylinderRadius(0.02)
     axes2.GetXAxisCaptionActor2D().GetTextActor().GetTextProperty().SetColor(1, 0, 0)
@@ -370,19 +370,57 @@ def create_axis():
     axes2.GetZAxisCaptionActor2D().GetTextActor().GetTextProperty().SetColor(0, 0, 1)
 
     transform = vtk.vtkTransform()
-    transform.Translate(*actor4_position)
-    transform.RotateX(45)
+    transform.Translate(*center)
+    transform.RotateX(rotatex/2)
     axes2.SetUserTransform(transform)
 
     renderer.AddActor(axes2)
     renderWindow.Render()
     return axes2
 
+def calculate_angle_between_vectors(v0,v1):
+    print("v0: ", v0)
+    print("v1: ",v1)
+
+    prod_vet = (v0[0]*v1[0])+(v0[1]*v1[1])+(v0[2]*v1[2])
+    soma_mod = (((v0[0]**2+v0[1]**2+v0[2]**2)*1/2)*(v1[0]**2+v1[1]**2+v1[2]**2)*1/2)
+
+    result = np.arccos(prod_vet/soma_mod)
+    result_degrees = (result*180)/np.pi
+    
+    print(">>> VECTORS' ANGLE: ", result_degrees)
+    return result_degrees
+
+def create_vector(p0,p1,opacity):
+
+    x = p0[0]-p1[0]
+    y = p0[1]-p1[1]
+    z = p0[2]-p1[2]
+
+    lineSource = vtk.vtkLineSource()
+    lineSource.SetPoint1(p0)
+    lineSource.SetPoint2(p1)
+    lineMapper = vtk.vtkPolyDataMapper()
+    lineMapper.SetInputConnection(lineSource.GetOutputPort())
+    lineActor = vtk.vtkActor()
+    lineActor.SetMapper(lineMapper)
+    lineActor.GetProperty().SetColor(1,1,1)
+    lineActor.GetProperty().SetOpacity(opacity)
+    lineActor.GetProperty().SetLineWidth(1)
+    lineActor.GetProperty()
+    renderer.AddActor(lineActor)
+
+    return x,y,z, lineActor
+
 def create_plane(p0, p1, p2, opacity,line):
     planeSource = vtk.vtkPlaneSource()
     planeSource.SetCenter(p1)
     planeSource.SetPoint1(p0)
     planeSource.SetPoint2(p2)
+
+    v1 = create_vector(p0,p1,0)
+    print(v1)
+    v2 = create_vector(p0,p2,0)
 
     mapper = vtk.vtkPolyDataMapper() 
     mapper.SetInputConnection(planeSource.GetOutputPort())
@@ -407,8 +445,6 @@ def create_plane(p0, p1, p2, opacity,line):
     planeSource.Update()
 
     if line == 1:
-        lineSource = vtk.vtkLineSource()
-        lineSource.SetPoint1(center)
 
         featureEdges = vtkFeatureEdges()
         featureEdges.SetInputConnection(planeSource.GetOutputPort())
@@ -422,31 +458,25 @@ def create_plane(p0, p1, p2, opacity,line):
 
         edgeActor = vtk.vtkActor()
         edgeActor.SetMapper(edgeMapper)
-        edgeActor.GetProperty().SetColor(1,1,1)  # Red color
+        edgeActor.GetProperty().SetColor(1,1,1)
         edgeActor.GetProperty().SetLineWidth(0.5)
-       
+
         end_point = [
             center[0] + planeNormal[0] * 50,
             center[1] + planeNormal[1] * 50, 
             center[2] + planeNormal[2] * 50
         ]
-        lineSource.SetPoint2(end_point)
         
-        lineMapper = vtk.vtkPolyDataMapper()
-        lineMapper.SetInputConnection(lineSource.GetOutputPort())
-        
-        lineActor = vtk.vtkActor()
-        lineActor.SetMapper(lineMapper)
-        lineActor.GetProperty().SetColor(1,1,1)
-        lineActor.GetProperty().SetLineWidth(1)
+        u = create_vector(center,end_point,1)
+        a_z = calculate_angle_between_vectors((u[0],u[1],u[2]),(v1[0],v1[1],v1[2]))
+        create_axis(center,a_z)
         renderer.AddActor(edgeActor)
-        renderer.AddActor(lineActor)
 
     renderer.AddActor(actor)
     renderer.AddActor(wireframeActor)
     print(">>> PLANE NORMAL:", planeNormal)
     renderWindow.Render()
-    return actor, planeNormal, planeSource
+    return actor, planeNormal, planeSource, v1
 
 def create_sphere(center, radius, color):
     sphereSource = vtk.vtkSphereSource()
@@ -948,7 +978,7 @@ def keypress_callback(obj, event):
                     cnc_mode_switch()                  
 
             elif key == '9':
-                create_axis()
+                create_axis(actor4_position,0)
                 renderWindow.Render()
 
 
