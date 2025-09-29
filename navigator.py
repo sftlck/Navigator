@@ -293,9 +293,7 @@ def calculate_avg_point(p0,p1,p2):
     y = (p0[1]+p1[1]+p2[1])/3
     z = (p0[2]+p1[2]+p2[2])/3
 
-    print(">>> AVERAGE X", x)
-    print(">>> AVERAGE Y", y)
-    print(">>> AVERAGE Z", z)
+    print(">>> AVERAGE POINT LOCATION: ", x, y, z)
 
     return x,y,z
 
@@ -378,24 +376,41 @@ def create_axis(center,rotatex):
     renderWindow.Render()
     return axes2
 
-def calculate_angle_between_vectors(v0,v1):
-    print("v0: ", v0)
-    print("v1: ",v1)
-
-    prod_vet = (v0[0]*v1[0])+(v0[1]*v1[1])+(v0[2]*v1[2])
-    soma_mod = (((v0[0]**2+v0[1]**2+v0[2]**2)*1/2)*(v1[0]**2+v1[1]**2+v1[2]**2)*1/2)
-
-    result = np.arccos(prod_vet/soma_mod)
-    result_degrees = (result*180)/np.pi
+def calculate_angle_between_vectors(v0, v1):
     
-    print(">>> VECTORS' ANGLE: ", result_degrees)
-    return result_degrees
+    print('\n>>> ANGLE BETWEEN VECTORS')
+    v0 = np.array(v0)
+    v1 = np.array(v1)
+    print('VECTORS :',v0,v1)
+    dot_product = np.dot(v0, v1)
+    magnitudes = np.linalg.norm(v0) * np.linalg.norm(v1)
+    
+    if magnitudes == 0:
+        print("> VECTOR'S MAGNITUDE IS ZERO")
+        return 0
+    
+    result = np.degrees(np.arccos(np.clip(dot_product / magnitudes, -1.0, 1.0)))
+    result2 = 360 - result
+    print('>>> ANGLE RESULT 1: ', result)
+    print('>>> ANGLE RESULT 2: ', result2)
+    
+    return result, result2
 
-def create_vector(p0,p1,opacity):
+def create_vector(p0, p1, opacity):
+
+    print('\n>>> CREATE VECTOR')
+    print('p0: ', p0)
+    print('p1: ', p1)
 
     x = p0[0]-p1[0]
     y = p0[1]-p1[1]
     z = p0[2]-p1[2]
+
+    direction = [x, y, z]
+    length = (x**2 + y**2 + z**2)**0.5
+    
+    if length > 0:
+        direction = [x/length, y/length, z/length]
 
     lineSource = vtk.vtkLineSource()
     lineSource.SetPoint1(p0)
@@ -407,19 +422,35 @@ def create_vector(p0,p1,opacity):
     lineActor.GetProperty().SetColor(1,1,1)
     lineActor.GetProperty().SetOpacity(opacity)
     lineActor.GetProperty().SetLineWidth(1)
-    lineActor.GetProperty()
     renderer.AddActor(lineActor)
+    
+    coneSource2 = vtk.vtkConeSource()
+    coneSource2.SetCenter(p0)
+    coneSource2.SetDirection([d for d in direction]) 
+    coneSource2.SetHeight(18)
+    coneSource2.SetRadius(6)
+    
+    coneMapper2 = vtk.vtkPolyDataMapper()
+    coneMapper2.SetInputConnection(coneSource2.GetOutputPort())
+    coneActor2 = vtk.vtkActor()
+    coneActor2.SetMapper(coneMapper2)
+    coneActor2.GetProperty().SetColor(0, 0, 0)
+    coneActor2.GetProperty().SetOpacity(opacity)
+    renderer.AddActor(coneActor2)
 
-    return x,y,z, lineActor
+    renderWindow.Render()
 
-def create_plane(p0, p1, p2, opacity,line):
+    return x, y, z
+
+def create_plane(p0, p1, p2, opacity, sceneNormalactor):
+    print('\n>>> CREATE PLANE')
     planeSource = vtk.vtkPlaneSource()
     planeSource.SetCenter(p1)
     planeSource.SetPoint1(p0)
     planeSource.SetPoint2(p2)
 
     v1 = create_vector(p0,p1,0)
-    print(v1)
+    #print(v1)
     v2 = create_vector(p0,p2,0)
 
     mapper = vtk.vtkPolyDataMapper() 
@@ -444,7 +475,7 @@ def create_plane(p0, p1, p2, opacity,line):
     planeNormal = planeSource.GetNormal()    
     planeSource.Update()
 
-    if line == 1:
+    if sceneNormalactor == 1:
 
         featureEdges = vtkFeatureEdges()
         featureEdges.SetInputConnection(planeSource.GetOutputPort())
@@ -495,7 +526,6 @@ def create_sphere(center, radius, color):
     renderWindow.Render()
     
     return sphere_actor
-    
 
 def create_volume_box_actor(limits, color):
     x_min, x_max, y_min, y_max, z_min, z_max = limits
@@ -563,16 +593,12 @@ def create_3dline(p0, p1):
     linesource.SetPoint1(p0)
     linesource.SetPoint2(p1)
     linesource.Update()
-
     mapper = vtk.vtkPolyDataMapper()
     mapper.SetInputConnection(linesource.GetOutputPort())
-
     actor = vtk.vtkActor()
     actor.SetMapper(mapper)
     actor.GetProperty().SetColor(39/255,221/255,232/255)
     actor.GetProperty().SetLineWidth(2)
-
-
     lineoutput = linesource.GetOutput()
 
     renderer.AddActor(actor)
@@ -981,7 +1007,15 @@ def keypress_callback(obj, event):
                 create_axis(actor4_position,0)
                 renderWindow.Render()
 
-
+            elif key == '6':
+                calculate_angle_between_vectors(create_vector(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-3]),
+                                                path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-4]),
+                                                1),
+                                                create_vector(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-1]),
+                                                path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-2]),
+                                                1))
+                #create_vector(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-1]), path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-2]),1)
+            
             elif key == '8':
                 print('\nKEY ',key)
                 print('>>> CREATE PLANE')
