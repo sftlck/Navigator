@@ -356,7 +356,7 @@ def create_circle(p0,p1,p2):
     renderWindow.Render()
     return actor, circumference_points
 
-def create_axis(center,rotatex):
+def create_axis(x,y,z,rotatex):
     
     print('>>> INSERT AXIS')
     axes2 = vtk.vtkAxesActor()
@@ -368,7 +368,7 @@ def create_axis(center,rotatex):
     axes2.GetZAxisCaptionActor2D().GetTextActor().GetTextProperty().SetColor(0, 0, 1)
 
     transform = vtk.vtkTransform()
-    transform.Translate(*center)
+    transform.Translate(0,0,z)
     transform.RotateX(rotatex/2)
     axes2.SetUserTransform(transform)
 
@@ -507,7 +507,7 @@ def create_plane(p0, p1, p2, opacity, sceneNormalactor):
     renderer.AddActor(wireframeActor)
     print(">>> PLANE NORMAL:", planeNormal)
     renderWindow.Render()
-    return actor, planeNormal, planeSource, v1
+    return actor, planeNormal, planeSource, v1, center[2]
 
 def create_sphere(center, radius, color):
     sphereSource = vtk.vtkSphereSource()
@@ -1004,7 +1004,14 @@ def keypress_callback(obj, event):
                     cnc_mode_switch()                  
 
             elif key == '9':
-                create_axis(actor4_position,0)
+                create_axis(0,
+                            0,
+                            create_plane(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-1]),
+                                path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-2]),
+                                path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-3]),
+                                0.5,
+                                1)[4],
+                            1)
                 renderWindow.Render()
 
             elif key == '6':
