@@ -498,9 +498,9 @@ def create_plane(p0, p1, p2, opacity, sceneNormalactor):
             center[2] + planeNormal[2] * 50
         ]
         
-        u = create_vector(center,end_point,1)
+        u = create_vector(end_point,center,1)
         a_z = calculate_angle_between_vectors((u[0],u[1],u[2]),(v1[0],v1[1],v1[2]))
-        create_axis(center,a_z)
+        #create_axis(center[0],center[1],center[2],a_z[0])                                   #### A_Z REPRESENTA O ÂNGULO INTERNO OBTIDO DE CALCULATE_ANGLE_BETWEEN_VECTORS
         renderer.AddActor(edgeActor)
 
     renderer.AddActor(actor)
@@ -1004,15 +1004,23 @@ def keypress_callback(obj, event):
                     cnc_mode_switch()                  
 
             elif key == '9':
-                create_axis(0,
-                            0,
-                            create_plane(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-1]),
-                                path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-2]),
-                                path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-3]),
-                                0.5,
-                                1)[4],
-                            1)
-                renderWindow.Render()
+                
+                print(f'\nKEY {key}')
+                print('>>> CREATE AXIS')
+
+                if check_cnc_position_list(cmm_position,3) == 0:
+                    print('>>> NOT ENOUGH ELEMENTS AVAILABLE')
+                else:
+            
+                    create_axis(0,
+                                0,
+                                create_plane(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-1]),
+                                    path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-2]),
+                                    path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-3]),
+                                    0.5,
+                                    1)[4],
+                                1)
+                    renderWindow.Render()
 
             elif key == '6':
                 calculate_angle_between_vectors(create_vector(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-3]),
