@@ -23,7 +23,7 @@ Neste ponto do projeto:
 
 [![Navigator Versão 0](http://i3.ytimg.com/vi/epavt-Uc5mA/hqdefault.jpg)](https://youtu.be/epavt-Uc5mA "Navigator Versão 0")
 
-> Se inscreve no canal pois eu posto atualizações do projeto por lá :yum::yum:
+> Se inscreve no canal pois as atualizações do projeto aparecem por lá :yum::yum:
 
 ## 💻 Pré-requisitos
 
