@@ -21,7 +21,7 @@ Neste ponto do projeto:
 
 ## :eyes: Veja no YouTube! :eyes:
 
-[![Navigator Versão 0](https://i3.ytimg.com/vi/Ub5H_4DRlw8/maxresdefault.jpg)](https://www.youtube.com/watch?v=Ub5H_4DRlw8 "Navigator Versão 0")
+[![Navigator Versão 0](http://i3.ytimg.com/vi/epavt-Uc5mA/hqdefault.jpg)](https://youtu.be/epavt-Uc5mA "Navigator Versão 0")
 
 > Se inscreve no canal pois eu posto atualizações do projeto por lá :yum::yum:
 
