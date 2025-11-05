@@ -1,6 +1,7 @@
 import vtk
 import time as t
 import numpy as np
+import pyautogui as pg
 
 from vtkmodules.vtkFiltersSources import vtkPlaneSource
 from vtkmodules.vtkFiltersCore import vtkFeatureEdges
@@ -773,6 +774,42 @@ def keypress_callback(obj, event):
                                 path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-3]),
                                 1,
                                 1)
+            
+            elif key == '8':                                       
+                print('\nKEY ',key)
+                print('>>> DEMO')
+                cycles = 10
+                DEMO = [
+                        (10,-10,-10),               # HOMING
+                        (570, -910, -460),          ## CANTO FRENTE ESQUERDA
+                        (10, -910, -460),           ## CANTO FRENTE DIREITA
+                        (610, -20, -10),            ## FUNDO ALTO DIREITA
+                        (570, -20, -50),            ## BAIXA TRIÂNGULO
+                        (530, -20, -10),            ## FUNDO ALTO MÉDIO DIRETIA
+                        (10, -10, -10)              ### REPETE
+                        ]
+                #KEY UP global_actor4_position  [770. 260. 640.] / local_current_position  [ 570. -910. -460.]
+
+                local_current_position = get_local_current_position(local_axes,local_origin,actor4_position)
+
+                for c in range(cycles):
+                    for i in DEMO:
+                        translate = translate_in_volume(actor4_position,
+                                                        actor3_position,
+                                                        actor2_position,
+                                                        (i)[0],
+                                                        (i)[1],
+                                                        (i)[2])
+
+                        actor4_position = translate[0]
+                        actor3_position = translate[1]
+                        actor2_position = translate[2]
+                        renderWindow.Render()
+        
+                    actor4_position = translate[0]
+                    actor3_position = translate[1]
+                    actor2_position = translate[2]
+
                         
             elif key == '4':                                             ## INPUT COMMAND
                 print('\nKEY ',key)
@@ -864,6 +901,9 @@ def keypress_callback(obj, event):
                                 actor4_position = translate[0]
                                 actor3_position = translate[1]
                                 actor2_position = translate[2]
+
+                if command == 'd' or command == 'D':
+                    pg.press('left')
                 else:
                     print(">>> UNKNOWN COMMAND")
                     print(">>> EXIT COMMAND INPUT MODE")
