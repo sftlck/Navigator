@@ -26,16 +26,16 @@ cmm_position = []
 
 global_volumetric_limits = [230,      # -X
                             775,      # +X
-                            170,    # -Y
+                            170,      # -Y
                             1200,     # +Y
                             600,      # -Z
                             1130]     # +Z
 
 local_volumetric_limits = [0        ,     # -X
                            755      ,     # +X
-                           -1005  ,     # -Y
+                           -1005    ,     # -Y
                            5        ,     # +Y
-                           -540        ,     # -Z
+                           -540     ,     # -Z
                            5]             # +Z
 
 actor1_position = [0,0,0]                               ## desempeno
@@ -44,11 +44,11 @@ actor4_position = [315,                                 ## cabeçote
                    1039.5,
                    1080]                                #### POSIÇÃO INICIAL EM Z
 
-actor3_position = [actor4_position[0]   -   310,              ## ponte
-                   actor4_position[1]   +   60,                           #### POSIÇÃO INICIAL EM Y
+actor3_position = [actor4_position[0]   -   310,        ## ponte
+                   actor4_position[1]   +   60,         #### POSIÇÃO INICIAL EM Y
                    actor4_position[2]   -   480]
 
-actor2_position = [actor4_position[0]   -   150,            ## capa do z    #### POSIÇÃO INICIAL EM X
+actor2_position = [actor4_position[0]   -   150,        ## capa do z    #### POSIÇÃO INICIAL EM X
                    actor4_position[1]   +   360,
                    actor4_position[2]   +   180]
 
@@ -561,6 +561,7 @@ local_volume_actor = create_volume_box_actor(local_volumetric_limits,color=(0,0.
 #safe_volume_actor = create_volume_box_actor(local_safe_limits,color=(0, 0.5, 0))
 
 def translate_in_volume(actor4_position,actor3_position,actor2_position,x,y,z):      ## o translate é uma função para ir de ponto A[x,y,z] a B[x1,y1,z1], onde A é a localização atual dentro do volume
+    
     #print('KEY L')              
     local_current_position = get_local_current_position(local_axes,local_origin,actor4_position)
     new_position = calculate_new_local_coordinates(x,
@@ -576,6 +577,11 @@ def translate_in_volume(actor4_position,actor3_position,actor2_position,x,y,z): 
         if check_local_volumetric_limits(local_axes,local_origin)== 1 or cnc_mode_state == False:
             occurence = 1
             break
+        
+        camera.SetFocalPoint(*actor4_position) ##ERASE THIS LINE
+        #camera.SetPosition(actor4_position[0]-1000,
+        #                   actor4_position[1],
+        #                   actor4_position[2]) ## perfil bonito  
         actor4.SetPosition(*(sync_actors_movement(actor4_position,actor3_position,actor2_position,pos)[0]))
         actor3.SetPosition(*(sync_actors_movement(actor4_position,actor3_position,actor2_position,pos)[1]))
         actor2.SetPosition(*(sync_actors_movement(actor4_position,actor3_position,actor2_position,pos)[2]))
@@ -609,7 +615,7 @@ def create_3dline(p0, p1):
     return actor, lineoutput
 
 def keypress_callback(obj, event):
-        global actor2_position, actor3_position, actor4_position, actor5_position, local_volumetric_limits, global_volumetric_limits
+        global actor2_position, actor3_position, actor4_position, actor5_position, local_volumetric_limits, global_volumetric_limits,camera
         #print(user_axis_control)
         if user_axis_control_check() == False:
             print('USER AXIS CONTROL', user_axis_control)
@@ -778,7 +784,7 @@ def keypress_callback(obj, event):
             elif key == '8':                                       
                 print('\nKEY ',key)
                 print('>>> DEMO')
-                cycles = 10
+                cycles = 1
                 DEMO = [
                         (10,-10,-10),               # HOMING
                         (570, -910, -460),          ## CANTO FRENTE ESQUERDA
@@ -1042,7 +1048,7 @@ def keypress_callback(obj, event):
             renderWindow.Render()
 
 def main():
-    global actor2, actor3, actor4, actor5, renderWindow, renderer
+    global actor2, actor3, actor4, actor5, renderWindow, renderer,camera
 
     reader1 = vtk.vtkSTLReader()
     reader1.SetFileName(r'navigatorbase3.stl')
@@ -1152,9 +1158,14 @@ def main():
 
     renderer.AddActor(axes)
 
-    camera = vtk.vtkCamera()
+    """camera = vtk.vtkCamera()
     camera.SetViewUp(1,1,1)  
     camera.SetPosition(-2000,-2500,1500) ## perfil bonito      
+    renderer.SetActiveCamera(camera)"""
+
+    camera = vtk.vtkCamera()
+    camera.SetViewUp(1,1,1)  
+    camera.SetPosition(-2000,-2500,1500) ## perfil bonito    
     camera.SetFocalPoint(1500, 1500, 500)
     renderer.SetActiveCamera(camera)
 
@@ -1167,3 +1178,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
