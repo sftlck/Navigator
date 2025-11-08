@@ -16,7 +16,7 @@ move_step = 10
 speed = 640
 e_sftlck_state = False
 scale = 0.75
-override_pos_limits_state = 0
+override_pos_limits_state = 1
 user_axis_control = True
 i = 0
 c = 100
@@ -560,7 +560,23 @@ local_volume_actor = create_volume_box_actor(local_volumetric_limits,color=(0,0.
 #local_volume_actor = create_volume_box_actor(local_volumetric_limits,color=(0.5, 0.5, 0))
 #safe_volume_actor = create_volume_box_actor(local_safe_limits,color=(0, 0.5, 0))
 
-def translate_in_volume(actor4_position,actor3_position,actor2_position,x,y,z):      ## o translate é uma função para ir de ponto A[x,y,z] a B[x1,y1,z1], onde A é a localização atual dentro do volume
+def camera_translate_in_scene(new_position):
+
+    camera_position = np.array(camera.GetPosition())
+    new_position = np.array(new_position)
+    #print(camera_position)
+
+    local_linear_path = linear_path(calculate_linear_distance(camera_position,new_position),camera_position,new_position,1)
+    global_linear_path = path_from_local_to_global_coordinates(local_origin,local_axes,local_linear_path)
+    camera.SetFocalPoint(*actor4_position)
+
+    for pos in global_linear_path:
+        camera.SetPosition(pos)        
+        renderer.ResetCameraClippingRange()
+        camera.OrthogonalizeViewUp()
+        renderWindow.Render()
+        
+def translate_in_volume(actor4_position,actor3_position,actor2_position,x,y,z,camera_demo = None, CAMERA_POS = None):      ## o translate é uma função para ir de ponto A[x,y,z] a B[x1,y1,z1], onde A é a localização atual dentro do volume
     
     #print('KEY L')              
     local_current_position = get_local_current_position(local_axes,local_origin,actor4_position)
@@ -577,11 +593,16 @@ def translate_in_volume(actor4_position,actor3_position,actor2_position,x,y,z): 
         if check_local_volumetric_limits(local_axes,local_origin)== 1 or cnc_mode_state == False:
             occurence = 1
             break
-        
-        camera.SetFocalPoint(*actor4_position) ##ERASE THIS LINE
-        #camera.SetPosition(actor4_position[0]-1000,
-        #                   actor4_position[1],
-        #                   actor4_position[2]) ## perfil bonito  
+        if camera_demo == True:
+            camera.SetFocalPoint(*actor4_position)
+            if CAMERA_POS != None:
+
+                camera.SetViewUp(*actor4_position) 
+                camera.SetPosition(*CAMERA_POS)
+                camera.OrthogonalizeViewUp()
+            
+            renderer.ResetCameraClippingRange()
+
         actor4.SetPosition(*(sync_actors_movement(actor4_position,actor3_position,actor2_position,pos)[0]))
         actor3.SetPosition(*(sync_actors_movement(actor4_position,actor3_position,actor2_position,pos)[1]))
         actor2.SetPosition(*(sync_actors_movement(actor4_position,actor3_position,actor2_position,pos)[2]))
@@ -779,12 +800,13 @@ def keypress_callback(obj, event):
                                 path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-2]),
                                 path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-3]),
                                 1,
-                                1)
-            
+                                1)                                   
+                
             elif key == '8':                                       
                 print('\nKEY ',key)
                 print('>>> DEMO')
                 cycles = 1
+
                 DEMO = [
                         (10,-10,-10),               # HOMING
                         (570, -910, -460),          ## CANTO FRENTE ESQUERDA
@@ -796,7 +818,6 @@ def keypress_callback(obj, event):
                         ]
                 #KEY UP global_actor4_position  [770. 260. 640.] / local_current_position  [ 570. -910. -460.]
 
-                local_current_position = get_local_current_position(local_axes,local_origin,actor4_position)
 
                 for c in range(cycles):
                     for i in DEMO:
@@ -816,7 +837,68 @@ def keypress_callback(obj, event):
                     actor3_position = translate[1]
                     actor2_position = translate[2]
 
-                        
+            elif key == '9':                                       
+                print('\nKEY ',key)
+                print('>>> DEMO_FINAL')
+                cycles = 1
+                DEMO_POS1 = [
+                        (10,-10,-10),               
+                        (570, -910, -460)
+                ]
+                DEMO_POS2 = [
+                        (10, -910, -460),           
+                        (610, -20, -10),
+                ]
+                DEMO_POS3 = [
+                        (570, -20, -50),           
+                        (530, -20, -10),
+                ]
+                DEMO_POS4 = [
+                    (10, -10, -10)
+                ]
+
+                CAMERA_POS = [[837.5,27.5,650],
+                              [-2000,-2500,1500],
+                              [190,1060,1120]
+                              ]
+                #KEY UP global_actor4_position  [770. 260. 640.] / local_current_position  [ 570. -910. -460.]
+
+                camera_translate_in_scene((675,-1110.5,-480))
+
+                local_current_position = get_local_current_position(local_axes,local_origin,actor4_position)
+
+                for c in range(cycles):
+                    for i in DEMO_POS1:
+                        translate = translate_in_volume(actor4_position, actor3_position, actor2_position, (i)[0], (i)[1], (i)[2], True)
+                        actor4_position, actor3_position, actor2_position = translate[0], translate[1], translate[2]
+                        renderWindow.Render()
+                    for i in DEMO_POS2:
+                        translate = translate_in_volume(actor4_position, actor3_position, actor2_position, (i)[0], (i)[1], (i)[2], True, CAMERA_POS[1])
+                        actor4_position,actor3_position, actor2_position = translate[0], translate[1], translate[2]
+                        renderWindow.Render()
+                    for i in DEMO_POS3:
+                        translate = translate_in_volume(actor4_position, actor3_position, actor2_position, (i)[0], (i)[1], (i)[2], True)
+                        actor4_position,actor3_position, actor2_position = translate[0], translate[1], translate[2]
+                        renderWindow.Render()
+                    for i in DEMO_POS4:
+                        translate = translate_in_volume(actor4_position, actor3_position, actor2_position, (i)[0], (i)[1], (i)[2], True, CAMERA_POS[2])
+                        actor4_position,actor3_position, actor2_position = translate[0], translate[1], translate[2]
+                        renderWindow.Render()
+
+                    actor4_position = translate[0]
+                    actor3_position = translate[1]
+                    actor2_position = translate[2]
+                    
+                    #camera_translate_in_scene((675,-1110.5,-480))
+
+                    actor4_position, actor3_position, actor2_position   = translate[0], translate[1], translate[2]
+                
+                camera.SetPosition(-2000,-2500,1500)    
+                camera.SetFocalPoint(1500, 1500, 500)
+                camera.SetViewUp(1,1,2.7)
+                camera.SetRoll(80)
+                renderer.ResetCameraClippingRange()
+
             elif key == '4':                                             ## INPUT COMMAND
                 print('\nKEY ',key)
                 print('>>> CREATE CIRCLE')
@@ -1156,7 +1238,7 @@ def main():
     axes.GetZAxisCaptionActor2D().GetTextActor().GetTextProperty().SetColor(0, 0, 1)  # Z azul
     axes.SetPosition(0, 0, 0)  # origem
 
-    renderer.AddActor(axes)
+    #renderer.AddActor(axes)
 
     """camera = vtk.vtkCamera()
     camera.SetViewUp(1,1,1)  
@@ -1168,6 +1250,7 @@ def main():
     camera.SetPosition(-2000,-2500,1500) ## perfil bonito    
     camera.SetFocalPoint(1500, 1500, 500)
     renderer.SetActiveCamera(camera)
+    renderer.ResetCameraClippingRange()
 
     global keypress_observer_id
     keypress_id = renderWindowInteractor.AddObserver("KeyPressEvent", keypress_callback)
