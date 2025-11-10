@@ -1,6 +1,6 @@
 # Navigator
 
-Este é um projeto do comportamento geométrico da operação de Medição por Coordenadas Zeiss Prismo Navigator, desconsiderando fatores de influência externas. Com a implementação funções algébricas e geométricas para reproduzir funções de manipulação de elementos presente no Software Calypso, o projeto é capaz de reproduzir o comportamento do equipamento em alto nível de abstração.
+Este é um projeto do comportamento geométrico da operação de uma Máquina Medição por Coordenadas Zeiss Prismo Navigator, desconsiderando fatores de influência externas. Com a implementação funções algébricas e geométricas para reproduzir funções de manipulação de elementos presente no Software Calypso, o projeto é capaz de reproduzir o comportamento do equipamento em alto nível de abstração.
 
 Projeto oriundo da união entre curiosidade em entender essas máquinas e o tempo livre entre 00:00 e 06:00 :heart_eyes:
 
