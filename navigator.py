@@ -856,30 +856,63 @@ def keypress_callback(obj, event):
                 DEMO_POS4 = [
                     (10, -10, -10)
                 ]
-
+                DEMO_POS5 = [
+                    (100, -200, -300)
+                ]
+                DEMO_POS6 = [
+                    (200, -200, -300)
+                ]
+                DEMO_POS7 = [
+                    (200, -300, -300)
+                ]
+                DEMO_POS8 = [
+                    (100, -300, -300)
+                ]
+                DEMO_POS9 = [
+                    (100, -100, -300)
+                ]
+                DEMO_POS10 = [
+                    (100, -100, -200)
+                ]
+                DEMO_POS11 = [
+                    (300, -300, -300)
+                ]
+                DEMO_POS12 = [
+                    (300, -300, -200)
+                ]
+                DEMO_POS13 = [
+                    (200, -300, -200)
+                ]
+                DEMO_POS14 = [
+                    (200, -200, -200)
+                ]
+                DEMO_POS15 = [
+                    (400, -500, -200)
+                ]
                 CAMERA_POS = [[837.5,27.5,650],
                               [-2000,-2500,1500],
-                              [190,1060,1120]
+                              [190,1060,1120],
+                              [-500,-200,1200]
                               ]
                 #KEY UP global_actor4_position  [770. 260. 640.] / local_current_position  [ 570. -910. -460.]
 
-                camera_translate_in_scene((675,-1110.5,-480))
+                #camera_translate_in_scene((675,-1110.5,-480))
 
                 local_current_position = get_local_current_position(local_axes,local_origin,actor4_position)
 
                 for c in range(cycles):
-                    for i in DEMO_POS1:
-                        translate = translate_in_volume(actor4_position, actor3_position, actor2_position, (i)[0], (i)[1], (i)[2], True)
-                        actor4_position, actor3_position, actor2_position = translate[0], translate[1], translate[2]
-                        renderWindow.Render()
-                    for i in DEMO_POS2:
-                        translate = translate_in_volume(actor4_position, actor3_position, actor2_position, (i)[0], (i)[1], (i)[2], True, CAMERA_POS[1])
-                        actor4_position,actor3_position, actor2_position = translate[0], translate[1], translate[2]
-                        renderWindow.Render()
-                    for i in DEMO_POS3:
-                        translate = translate_in_volume(actor4_position, actor3_position, actor2_position, (i)[0], (i)[1], (i)[2], True)
-                        actor4_position,actor3_position, actor2_position = translate[0], translate[1], translate[2]
-                        renderWindow.Render()
+                    #for i in DEMO_POS1:
+                    #    translate = translate_in_volume(actor4_position, actor3_position, actor2_position, (i)[0], (i)[1], (i)[2], True)
+                    #    actor4_position, actor3_position, actor2_position = translate[0], translate[1], translate[2]
+                    #    renderWindow.Render()
+                    #for i in DEMO_POS2:
+                    #    translate = translate_in_volume(actor4_position, actor3_position, actor2_position, (i)[0], (i)[1], (i)[2], True, CAMERA_POS[1])
+                    #    actor4_position,actor3_position, actor2_position = translate[0], translate[1], translate[2]
+                    #    renderWindow.Render()
+                    #for i in DEMO_POS3:
+                    #    translate = translate_in_volume(actor4_position, actor3_position, actor2_position, (i)[0], (i)[1], (i)[2], True)
+                    #    actor4_position,actor3_position, actor2_position = translate[0], translate[1], translate[2]
+                    #    renderWindow.Render()
                     for i in DEMO_POS4:
                         translate = translate_in_volume(actor4_position, actor3_position, actor2_position, (i)[0], (i)[1], (i)[2], True, CAMERA_POS[2])
                         actor4_position,actor3_position, actor2_position = translate[0], translate[1], translate[2]
@@ -890,14 +923,134 @@ def keypress_callback(obj, event):
                     actor2_position = translate[2]
                     
                     #camera_translate_in_scene((675,-1110.5,-480))
-
-                    actor4_position, actor3_position, actor2_position   = translate[0], translate[1], translate[2]
+                    actor4_position, actor3_position, actor2_position = translate[0], translate[1], translate[2]
                 
-                camera.SetPosition(-2000,-2500,1500)    
-                camera.SetFocalPoint(1500, 1500, 500)
-                camera.SetViewUp(1,1,2.7)
-                camera.SetRoll(80)
-                renderer.ResetCameraClippingRange()
+                    camera.SetPosition(-2000,-2500,1500)    
+                    camera.SetFocalPoint(1500, 1500, 500)
+                    camera.SetViewUp(1,1,2.7)
+                    camera.SetRoll(80)
+                    renderer.ResetCameraClippingRange()
+
+                    for i in DEMO_POS5:
+                        translate = translate_in_volume(actor4_position, actor3_position, actor2_position, (i)[0], (i)[1], (i)[2], True, CAMERA_POS[3])
+                        actor4_position,actor3_position, actor2_position = translate[0], translate[1], translate[2]
+                        renderWindow.Render()                  
+
+                    ### REGISTRA 1 PONTO
+                    renderer.AddActor(create_sphere((actor4_position[0], actor4_position[1], actor4_position[2]), 4, (0,0,0.75)))
+                    cmm_position.append(get_local_current_position(local_axes,local_origin,actor4_position))
+
+                    for i in DEMO_POS7:
+                        translate = translate_in_volume(actor4_position, actor3_position, actor2_position, (i)[0], (i)[1], (i)[2], True, CAMERA_POS[3])
+                        actor4_position,actor3_position, actor2_position = translate[0], translate[1], translate[2]
+                        renderWindow.Render()             
+
+                    ### REGISTRA 1 PONTO
+                    renderer.AddActor(create_sphere((actor4_position[0], actor4_position[1], actor4_position[2]), 4, (0,0,0.75)))
+                    cmm_position.append(get_local_current_position(local_axes,local_origin,actor4_position))
+
+                    create_3dline(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-1]),path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-2]))
+
+                    for i in DEMO_POS6:
+                        translate = translate_in_volume(actor4_position, actor3_position, actor2_position, (i)[0], (i)[1], (i)[2], True, CAMERA_POS[3])
+                        actor4_position,actor3_position, actor2_position = translate[0], translate[1], translate[2]
+                        renderWindow.Render()
+
+                    ### REGISTRA 1 PONTO
+                    renderer.AddActor(create_sphere((actor4_position[0], actor4_position[1], actor4_position[2]), 4, (0,0,0.75)))
+                    cmm_position.append(get_local_current_position(local_axes,local_origin,actor4_position))
+
+                    for i in DEMO_POS11:
+                        translate = translate_in_volume(actor4_position, actor3_position, actor2_position, (i)[0], (i)[1], (i)[2], True, CAMERA_POS[3])
+                        actor4_position,actor3_position, actor2_position = translate[0], translate[1], translate[2]
+                        renderWindow.Render()
+
+                    ### REGISTRA 1 PONTO
+                    renderer.AddActor(create_sphere((actor4_position[0], actor4_position[1], actor4_position[2]), 4, (0,0,0.75)))
+                    cmm_position.append(get_local_current_position(local_axes,local_origin,actor4_position))
+                    
+                    create_3dline(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-1]),path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-2]))
+
+                    ### CRIA PLANO  
+                    #create_plane(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-1]), path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-2]), path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-3]), 1, 1)   
+
+                    for i in DEMO_POS12:
+                        translate = translate_in_volume(actor4_position, actor3_position, actor2_position, (i)[0], (i)[1], (i)[2], True, CAMERA_POS[3])
+                        actor4_position,actor3_position, actor2_position = translate[0], translate[1], translate[2]
+                        renderWindow.Render()
+
+                    ### REGISTRA 1 PONTO
+                    renderer.AddActor(create_sphere((actor4_position[0], actor4_position[1], actor4_position[2]), 4, (0,0,0.75)))
+                    cmm_position.append(get_local_current_position(local_axes,local_origin,actor4_position))
+                    
+                    for i in DEMO_POS13:
+                        translate = translate_in_volume(actor4_position, actor3_position, actor2_position, (i)[0], (i)[1], (i)[2], True, CAMERA_POS[3])
+                        actor4_position,actor3_position, actor2_position = translate[0], translate[1], translate[2]
+                        renderWindow.Render()
+
+                    ### REGISTRA 1 PONTO
+                    renderer.AddActor(create_sphere((actor4_position[0], actor4_position[1], actor4_position[2]), 4, (0,0,0.75)))
+                    cmm_position.append(get_local_current_position(local_axes,local_origin,actor4_position))
+
+                    for i in DEMO_POS14:
+                        translate = translate_in_volume(actor4_position, actor3_position, actor2_position, (i)[0], (i)[1], (i)[2], True, CAMERA_POS[3])
+                        actor4_position,actor3_position, actor2_position = translate[0], translate[1], translate[2]
+                        renderWindow.Render()
+
+                    ### REGISTRA 1 PONTO
+                    renderer.AddActor(create_sphere((actor4_position[0], actor4_position[1], actor4_position[2]), 4, (0,0,0.75)))
+                    cmm_position.append(get_local_current_position(local_axes,local_origin,actor4_position))
+
+                    create_plane(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-1]), path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-2]), path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-3]), 1, 1)   
+
+                    ### CRIA PLANO  
+                    #create_plane(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-1]), path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-2]), path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-3]), 1, 1)   
+
+                    for i in DEMO_POS8:
+                        translate = translate_in_volume(actor4_position, actor3_position, actor2_position, (i)[0], (i)[1], (i)[2], True, CAMERA_POS[3])
+                        actor4_position,actor3_position, actor2_position = translate[0], translate[1], translate[2]
+                        renderWindow.Render()
+                    ### REGISTRA 1 PONTO
+                    renderer.AddActor(create_sphere((actor4_position[0], actor4_position[1], actor4_position[2]), 4, (0,0,0.75)))
+                    cmm_position.append(get_local_current_position(local_axes,local_origin,actor4_position))
+
+                    for i in DEMO_POS9:
+                        translate = translate_in_volume(actor4_position, actor3_position, actor2_position, (i)[0], (i)[1], (i)[2], True, CAMERA_POS[3])
+                        actor4_position,actor3_position, actor2_position = translate[0], translate[1], translate[2]
+                        renderWindow.Render()
+                    ### REGISTRA 1 PONTO
+                    renderer.AddActor(create_sphere((actor4_position[0], actor4_position[1], actor4_position[2]), 4, (0,0,0.75)))
+                    cmm_position.append(get_local_current_position(local_axes,local_origin,actor4_position))
+
+                    for i in DEMO_POS10:
+                        translate = translate_in_volume(actor4_position, actor3_position, actor2_position, (i)[0], (i)[1], (i)[2], True, CAMERA_POS[3])
+                        actor4_position,actor3_position, actor2_position = translate[0], translate[1], translate[2]
+                        renderWindow.Render()
+                    ### REGISTRA 1 PONTO
+                    renderer.AddActor(create_sphere((actor4_position[0], actor4_position[1], actor4_position[2]), 4, (0,0,0.75)))
+                    cmm_position.append(get_local_current_position(local_axes,local_origin,actor4_position))
+                    
+                    ### CRIA CÍRCULO
+                    circle = create_circle(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-1]), path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-2]), path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-3]))
+                    local_current_position = get_local_current_position(local_axes,local_origin,actor4_position)
+                    for i in circle[1]:
+                        translate = translate_in_volume(actor4_position, actor3_position, actor2_position, (get_local_current_position(local_axes,local_origin,i[0])[0]), (get_local_current_position(local_axes,local_origin,i[1])[1]), (get_local_current_position(local_axes,local_origin,i[2])[2]), True, CAMERA_POS[1])
+                        actor4_position = translate[0]
+                        actor3_position = translate[1]
+                        actor2_position = translate[2]
+                        renderWindow.Render()
+                    actor4_position = translate[0]
+                    actor3_position = translate[1]
+                    actor2_position = translate[2]
+
+                    for i in DEMO_POS15:
+                        translate = translate_in_volume(actor4_position, actor3_position, actor2_position, (i)[0], (i)[1], (i)[2], True, CAMERA_POS[3])
+                        actor4_position,actor3_position, actor2_position = translate[0], translate[1], translate[2]
+                        
+                        renderer.AddActor(create_sphere((actor4_position[0], actor4_position[1], actor4_position[2]), 4, (0,0,0.75)))
+                        cmm_position.append(get_local_current_position(local_axes,local_origin,actor4_position))
+                        renderWindow.Render()
+                    ### REGISTRA 1 PONTO
 
             elif key == '4':                                             ## INPUT COMMAND
                 print('\nKEY ',key)
