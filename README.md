@@ -51,7 +51,6 @@ Para instalar o Navigator, siga estas etapas:
 
 Utilize estes comandos do teclado para utilizar Navigator:
 
-- Use "8" para executar uma demonstração da criação de elementos geométricos em modo CNC
 - Use as setas para se movimentar no espaço
 - Use "0" para listar a posição atual do centro do Sensor de apalpação no sistema de coordenadas da máquina e no sistema de coordenadas global
 - Use "1" para registrar as coordenadas de um Ponto no espaço
@@ -59,4 +58,9 @@ Utilize estes comandos do teclado para utilizar Navigator:
 - Use "4" para criar um Círculo e então Navigator executará a trajetória deste objeto em modo CNC
 - Use "6" para calcular o ângulo interno e externo entre duas linhas coplanares usando os últimos 4 pontos registrados
 - Use "7" para criar um Plano usando os três últimos pontos registrados
-- Use "9" para executar o programa de warm-up em modo CNC, inspirado no comando Shift + Return + F10 das MMCs Zeiss 
+- Use "8" para executar o programa de warm-up em modo CNC, inspirado no comando Shift + Return + F10 das MMCs Zeiss
+- Use "9" para executar a demonstração igualzinha ao do vídeo do projeto no YouTube!
+
+#### Referências:
+- Engrenagem "SPUR D12 Z2 17 AP20" obtida de: https://khkgears2.net/catalog2/SS2-17
+- Modelo .skp da Zeiss Prismo Navigator: https://3dwarehouse-classic.sketchup.com/model/121100ae-13aa-4d65-8948-68686ba049c9/CMM-Carl-Zeiss-Prismo-Navigator
