@@ -10,6 +10,7 @@ from vtkmodules.vtkRenderingCore import (
     vtkActor,
     vtkPolyDataMapper,
 )
+
 from vtkmodules.vtkCommonColor import vtkNamedColors
 
 move_step = 10
@@ -55,6 +56,10 @@ actor2_position = [actor4_position[0]   -   150,        ## capa do z    #### POS
 actor5_position = [1000,                                ## esfera
                    1000, 
                    actor3_position[2]   +   210]
+
+actor6_position = [0,                                   ## engrenagem
+                   0, 
+                   0]
 
 local_safe_limits = [local_volumetric_limits[0]     +   5      ,   ## deslocamento automático após e_sftlck_state False em check_local_volumetric_limits
                      local_volumetric_limits[1]     -   5      ,
@@ -892,7 +897,7 @@ def keypress_callback(obj, event):
                     (350, -500, -300)
                 ]
                 CAMERA_POS = [[837.5,27.5,650],
-                              [-2000,-2500,1500],
+                              [-500,-1000,1500],
                               [190,1060,1120],
                               [-500,-200,1200]
                               ]
@@ -1371,7 +1376,19 @@ def main():
     actor5 = vtk.vtkActor()
     actor5.SetMapper(mapper5)
     actor5.SetPosition(*actor5_position)
-    
+        
+    #reader6 = vtk.vtkSTLReader()
+
+    #reader6.SetFileName(r'SPUR D12 17 AP20 Z2.stl')
+    #reader6.Update()
+
+    #mapper6 = vtk.vtkPolyDataMapper()
+    #mapper6.SetInputConnection(reader6.GetOutputPort())
+
+    #actor6 = vtk.vtkActor()
+    #actor6.SetMapper(mapper6)
+    #actor6.SetPosition(*actor6_position)
+
     renderer = vtk.vtkRenderer()
     renderWindow = vtk.vtkRenderWindow()
     renderWindow.AddRenderer(renderer)
@@ -1383,13 +1400,14 @@ def main():
 
     renderer.SetOcclusionRatio(0.004)
     
-    renderWindow.SetSize(1080,720)
+    renderWindow.SetSize(1280,720)
 
     renderer.AddActor(actor1)
     renderer.AddActor(actor2)
     renderer.AddActor(actor3)
     renderer.AddActor(actor4)
     #renderer.AddActor(actor5)
+    #renderer.AddActor(actor6)
       
     colors = vtk.vtkNamedColors()
 
