@@ -22,7 +22,7 @@ Neste ponto do projeto:
 
 ## :eyes: Veja no YouTube! :eyes:
 
-[![Navigator Versão 0](http://i3.ytimg.com/vi/epavt-Uc5mA/hqdefault.jpg)](https://youtu.be/epavt-Uc5mA "Navigator Versão 0")
+[![Navigator Versão Zero - Demonstração de Elementos Geométricos 1](http://i3.ytimg.com/vi/epavt-Uc5mA/hqdefault.jpg)](https://www.youtube.com/watch?v=REVCj6Yi3OE")
 
 > Se inscreve no canal pois as atualizações do projeto aparecem por lá :yum::yum:
 
