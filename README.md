@@ -63,4 +63,4 @@ Utilize estes comandos do teclado para utilizar Navigator:
 
 #### Referências:
 - Engrenagem "SPUR D12 Z2 17 AP20" obtida de: https://khkgears2.net/catalog2/SS2-17
-- Modelo .skp da Zeiss Prismo Navigator: https://3dwarehouse-classic.sketchup.com/model/121100ae-13aa-4d65-8948-68686ba049c9/CMM-Carl-Zeiss-Prismo-Navigator
+- Modelo .skp da Zeiss Prismo Navigator: [https://3dwarehouse-classic.sketchup.com/model/121100ae-13aa-4d65-8948-68686ba049c9/CMM-Carl-Zeiss-Prismo-Navigator](https://3dwarehouse.sketchup.com/model/121100ae-13aa-4d65-8948-68686ba049c9/CMM-Carl-Zeiss-Prismo-Navigator)
