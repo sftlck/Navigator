@@ -6,10 +6,7 @@ import pyautogui as pg
 from vtkmodules.vtkFiltersSources import vtkPlaneSource
 from vtkmodules.vtkFiltersCore import vtkFeatureEdges
 from vtkmodules.vtkFiltersSources import vtkRegularPolygonSource
-from vtkmodules.vtkRenderingCore import (
-    vtkActor,
-    vtkPolyDataMapper,
-)
+from vtkmodules.vtkRenderingCore import (vtkActor,vtkPolyDataMapper)
 
 from vtkmodules.vtkCommonColor import vtkNamedColors
 
@@ -448,6 +445,166 @@ def create_vector(p0, p1, opacity):
 
     return x, y, z
 
+##### CASTRO 08/03/2026 - A PARTIR DAQUI, EM VEZ DE P_0,P_1,P_2 A GENTE VAI USAR LISTA DE P_i
+
+def create_plane_min_sq(points, opacity, sceneNormalactor):
+    print('\n>>> CREATE PLANE MINIMUM SQUARE\n')
+
+    print('points', points)
+
+    mAx = []
+    mAy = []
+    mAz = []
+    m1 = []
+
+    for i in points:
+        mAx.append(i[0])
+        mAy.append(i[1])
+        mAz.append(i[2])
+        m1.append(1)
+
+    A = []
+    for i in range(len(mAx)):
+        line = [mAx[i], mAy[i], m1[i]]
+        A.append(line)
+
+    linhas = len(A)
+    colunas = len(A[0])
+    At = []
+    for j in range(colunas):
+        nova_linha = []
+        for i in range(linhas):
+            nova_linha.append(A[i][j])
+        At.append(nova_linha)
+
+    At_A = []
+    for i in range(len(At)):
+        linha_res = []
+        for j in range(len(A[0])):
+            linha_res.append(0)
+        At_A.append(linha_res)
+
+    for i in range(len(At)):
+        for j in range(len(A[0])):
+            soma = 0
+            for k in range(len(A)):
+                soma += At[i][k] * A[k][j]
+            At_A[i][j] = soma
+
+    At_mAz = []
+    for i in range(len(At)):
+        soma = 0
+        for k in range(len(mAz)):
+            soma += At[i][k] * mAz[k]
+        At_mAz.append(soma)
+
+    def matriz_inversa(M):
+        a, b, c = M[0][0], M[0][1], M[0][2]
+        d, e, f = M[1][0], M[1][1], M[1][2]
+        g, h, i = M[2][0], M[2][1], M[2][2]
+        
+        det = a*(e*i - f*h) - b*(d*i - f*g) + c*(d*h - e*g)
+        
+        if det == 0:
+            print(">>> ERROR CALCULATING MATRIX")
+            return None
+        
+        inv_det = 1/det
+        
+        M_inv = [
+            [(e*i - f*h) * inv_det, (c*h - b*i) * inv_det, (b*f - c*e) * inv_det],
+            [(f*g - d*i) * inv_det, (a*i - c*g) * inv_det, (c*d - a*f) * inv_det],
+            [(d*h - e*g) * inv_det, (b*g - a*h) * inv_det, (a*e - b*d) * inv_det]
+        ]
+        
+        return M_inv
+
+    At_A_inv = matriz_inversa(At_A)
+    
+    F = []
+    for i in range(len(At_A_inv)):
+        soma = 0
+        for k in range(len(At_mAz)):
+            soma += At_A_inv[i][k] * At_mAz[k]
+        F.append(soma)
+
+    print('> F (COEFFICIENTS)', F)
+    
+    A_coef, B_coef, D_coef = F[0], F[1], F[2]
+    
+    planeNormal = (A_coef, B_coef, -1.0)
+    
+    center = [sum(mAx)/len(mAx), sum(mAy)/len(mAy), sum(mAz)/len(mAz)]
+    
+    normal = np.array(planeNormal)
+    normal = normal / np.linalg.norm(normal)
+    
+    if abs(normal[0]) < 0.9:
+        v1 = np.cross(normal, [1, 0, 0])
+    else:
+        v1 = np.cross(normal, [0, 1, 0])
+    v1 = v1 / np.linalg.norm(v1)
+    v2 = np.cross(normal, v1)
+    v2 = v2 / np.linalg.norm(v2)
+    
+    points_proj = []
+    for p in points:
+        p_vec = np.array(p) - np.array(center)
+        u = np.dot(p_vec, v1)
+        v = np.dot(p_vec, v2)
+        points_proj.append([u, v])
+    
+    points_proj = np.array(points_proj)
+    
+    u_min, u_max = np.min(points_proj[:, 0]), np.max(points_proj[:, 0])
+    v_min, v_max = np.min(points_proj[:, 1]), np.max(points_proj[:, 1])
+    
+    margin = max((u_max - u_min) * 0.1, (v_max - v_min) * 0.1, 1.0)
+    u_min -= margin
+    u_max += margin
+    v_min -= margin
+    v_max += margin
+    
+    p0 = np.array(center) + u_min * v1 + v_min * v2
+    p1 = np.array(center) + u_max * v1 + v_min * v2
+    p2 = np.array(center) + u_min * v1 + v_max * v2
+    
+    planeSource = vtk.vtkPlaneSource()
+    planeSource.SetOrigin(p0)
+    planeSource.SetPoint1(p1)
+    planeSource.SetPoint2(p2)
+    
+    mapper = vtk.vtkPolyDataMapper()
+    mapper.SetInputConnection(planeSource.GetOutputPort())
+    
+    actor = vtkActor()
+    actor.SetMapper(mapper)
+    actor.GetProperty().SetOpacity(0)
+    
+    wireframeMapper = vtk.vtkPolyDataMapper()
+    wireframeMapper.SetInputConnection(planeSource.GetOutputPort())
+    
+    wireframeActor = vtkActor()
+    wireframeActor.SetMapper(wireframeMapper)
+    wireframeActor.GetProperty().SetRepresentationToWireframe()
+    wireframeActor.GetProperty().SetColor(39/255, 221/255, 232/255)
+    wireframeActor.GetProperty().SetLineWidth(2)
+    wireframeActor.GetProperty().SetLighting(False)
+    wireframeActor.GetProperty().SetOpacity(opacity)
+    
+    # Add to renderer
+    renderer.AddActor(actor)
+    renderer.AddActor(wireframeActor)
+    
+    print(">>> PLANE NORMAL:", planeNormal)
+    print(">>> PLANE CENTER:", center)
+    print(">>> PLANE SIZE:", u_max - u_min, "x", v_max - v_min)
+    
+    renderWindow.Render()
+    
+    return actor, planeNormal, planeSource
+
+
 def create_plane(p0, p1, p2, opacity, sceneNormalactor):
     print('\n>>> CREATE PLANE')
     planeSource = vtk.vtkPlaneSource()
@@ -480,6 +637,15 @@ def create_plane(p0, p1, p2, opacity, sceneNormalactor):
     #create_sphere(center,2,(1,1,1))
     
     planeNormal = planeSource.GetNormal()    
+    
+    ##### CASTRO 08/03/2026 - QUERO FAZER UM PLANO AJUSTADO POR MÍNIMOS QUADRADOS
+    ##### MAS PRIMEIRO PRECISO VER A EQUAÇÃO DO PLANO NA FORMA
+    ##### Ax + By + Cz + D
+    A,B,C = planeNormal
+    D = -(A*p1[0] + B*p1[1] + C*p1[2])
+    print(f"> PLANE EQUATION: {A}x + {B}y + {C}z + {D} = 0")
+    print(f"> NORMAL VECTOR: ({A}, {B}, {C})")
+    
     planeSource.Update()
 
     if sceneNormalactor == 1:
@@ -794,6 +960,15 @@ def keypress_callback(obj, event):
                     create_3dline(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-1]),
                                 path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-2]))
             
+            ##### CASTRO 08/03/2026 - AGORA TEM PLANO COM AJUSTE DE MÍNIMOS QUADRADOS
+            elif key == 'i':                
+
+                points = []
+                for p in range(len(cmm_position)):
+                    points.append(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[p]))
+
+                create_plane_min_sq(points, 1, 1)
+
             elif key == '7':
                 print('\nKEY ',key)
                 print('>>> CREATE PLANE')
