@@ -10,17 +10,17 @@ from vtkmodules.vtkRenderingCore import (vtkActor,vtkPolyDataMapper)
 
 from vtkmodules.vtkCommonColor import vtkNamedColors
 
-move_step = 10
-speed = 640
-e_sftlck_state = False
-scale = 0.75
-override_pos_limits_state = 1
-user_axis_control = True
-i = 0
-c = 100
-cnc_mode_state = False
-show_volume_bounds = True
-cmm_position = [] 
+move_step =                     10
+speed =                         640
+e_sftlck_state =                False
+scale =                         0.75
+override_pos_limits_flag =     1
+user_axis_control =             True
+i =                             0
+c =                                     100
+cnc_mode_state =                False
+show_volume_bounds =            True
+cmm_position =                  [] 
 
 global_volumetric_limits = [230,      # -X
                             775,      # +X
@@ -250,7 +250,7 @@ def linear_path(distance,local_current_position, new_position,move_step):
     
     return np.stack((xpath, ypath, zpath), axis=1)
 
-if override_pos_limits_state == 1:
+if override_pos_limits_flag == 1:
     print('>>> OVERRIDE POS LIMITS')
 else:
     if check_local_volumetric_limits(local_axes,local_origin)== 1:
@@ -823,7 +823,7 @@ def keypress_callback(obj, event):
 
             if key == 'Left':                                               ## MOVER -X
 
-                if override_pos_limits_state == 1:
+                if override_pos_limits_flag == 1:
                     actor4_position[0] -= move_step                         ## avanço
                     actor2_position[0] -= move_step
                     print('KEY LEFT global_actor4_position ', actor4_position, '/ local_current_position ', get_local_current_position(local_axes,local_origin,actor4_position))
@@ -841,7 +841,7 @@ def keypress_callback(obj, event):
                 
             elif key == 'Right':                                            ## MOVER +X
                 
-                if override_pos_limits_state == 1:
+                if override_pos_limits_flag == 1:
                     actor4_position[0] += move_step                         ## avanço
                     actor2_position[0] += move_step
                     print('KEY RIGHT global_actor4_position ', actor4_position, '/ local_current_position ', get_local_current_position(local_axes,local_origin,actor4_position))
@@ -859,7 +859,7 @@ def keypress_callback(obj, event):
 
             elif key == 'Up':                                               ## MOVER +Y
                 
-                if override_pos_limits_state == 1:
+                if override_pos_limits_flag == 1:
                     actor4_position[1] += move_step                         ## avanço
                     actor3_position[1] += move_step
                     actor2_position[1] += move_step
@@ -881,7 +881,7 @@ def keypress_callback(obj, event):
                         
             elif key == 'Down':                                             ## MOVER -Y
                 
-                if override_pos_limits_state == 1:
+                if override_pos_limits_flag == 1:
                     actor4_position[1] -= move_step                         ## avanço
                     actor3_position[1] -= move_step
                     actor2_position[1] -= move_step
@@ -904,9 +904,9 @@ def keypress_callback(obj, event):
                         #actor3_position[1] -= move_step                     ## reação ao avanço
                         #actor2_position[1] -= move_step                     ## reação ao avanço
 
-            elif key == 'm':                                                ## MOVER -Z
+            elif key == 'm' or key == 'M':                                                ## MOVER -Z
                 
-                if override_pos_limits_state == 1:
+                if override_pos_limits_flag == 1:
                     actor4_position[2] -= move_step
                     print('KEY m global_actor4_position ', actor4_position, '/ local_current_position ', get_local_current_position(local_axes,local_origin,actor4_position))
 
@@ -918,9 +918,9 @@ def keypress_callback(obj, event):
                         check_global_volumetric_limits(actor4_position)
                         actor4_position[2] -= move_step
 
-            elif key == 'k':                                                ## MOVER +Z
+            elif key == 'k' or key == 'K':                                                ## MOVER +Z
                                 
-                if override_pos_limits_state == 1:
+                if override_pos_limits_flag == 1:
                     actor4_position[2] += move_step
                     print('KEY k global_actor4_position ', actor4_position, '/ local_current_position ', get_local_current_position(local_axes,local_origin,actor4_position))
 
@@ -969,7 +969,7 @@ def keypress_callback(obj, event):
 
                 create_plane_min_sq(points, 1, 1)
 
-            elif key == '7':
+            elif key == '3':
                 print('\nKEY ',key)
                 print('>>> CREATE PLANE')
 
@@ -1273,19 +1273,19 @@ def keypress_callback(obj, event):
                     
                     local_current_position = get_local_current_position(local_axes,local_origin,actor4_position)
 
-                    for i in circle[1]:
-                        translate = translate_in_volume(actor4_position,
-                                                        actor3_position,
-                                                        actor2_position,
-                                                        (get_local_current_position(local_axes,local_origin,i[0])[0]),
-                                                        (get_local_current_position(local_axes,local_origin,i[1])[1]),
-                                                        (get_local_current_position(local_axes,local_origin,i[2])[2]))
-                        actor4_position = translate[0]
-                        actor3_position = translate[1]
-                        actor2_position = translate[2]
-                        renderWindow.Render()
-
-                        #t.sleep(0.01)
+                    #for i in circle[1]:
+                    #    translate = translate_in_volume(actor4_position,
+                    #                                    actor3_position,
+                    #                                    actor2_position,
+                    #                                    (get_local_current_position(local_axes,local_origin,i[0])[0]),
+                    #                                    (get_local_current_position(local_axes,local_origin,i[1])[1]),
+                    #                                    (get_local_current_position(local_axes,local_origin,i[2])[2]))
+                    #    actor4_position = translate[0]
+                    #    actor3_position = translate[1]
+                    #    actor2_position = translate[2]
+                    #    renderWindow.Render()
+#
+                    #    #t.sleep(0.01)
 
                     actor4_position = translate[0]
                     actor3_position = translate[1]
