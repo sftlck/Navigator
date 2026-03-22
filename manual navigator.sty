@@ -1,0 +1,115 @@
+\documentclass{article}
+
+% Language setting
+% Replace `english' with e.g. `spanish' to change the document language
+\usepackage[english]{babel}
+
+\usepackage{array}
+% Set page size and margins
+% Replace `letterpaper' with `a4paper' for UK/EU standard size
+
+% Useful packages
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+\title{Manual de Uso de Navigator}
+
+\author{Guilherme Willian Castro}
+\date{22/03/2026}
+
+\begin{document}
+\maketitle
+
+
+\section{Introdução}
+
+Este documento mostra os atalhos de teclado para controle da máquina, executar funções vetoriais e funções extras dentro do software Navigator.
+\newpage
+
+\section{Comandos básicos de movimento}
+\paragraph{1}
+Durante o uso do software, use os comandos abaixo para se movimentar dentro do volume permitido pela máquina.
+
+\begin{center}
+\begin{tabular}{ | m{2 cm} | m{3cm} |} 
+  \hline
+  \textbf{Comando}& \textbf{Descrição} \\ 
+  \hline
+  \centering ↑ &  Movimento em +Y \\ 
+  \hline
+  \centering ↓ & Movimento em -Y \\ 
+  \hline
+  \centering ← & Movimento em -X \\ 
+  \hline
+  \centering → & Movimento em +X \\ 
+  \hline
+  \centering "m" ou "M" & Movimento em -Z \\ 
+  \hline
+  \centering "k" ou "K" & Movimento em +Z \\ 
+  \hline
+  
+\end{tabular}
+\end{center}
+\newpage
+
+\section{Funções Vetoriais}
+\paragraph{1}
+Durante o uso do software, use o teclado numérico para registrar pontos, criar elementos geométricos, e alterar a visualização de elementos-chave do software.
+
+\begin{center}
+\begin{tabular}{ | m{2 cm} | m{2cm}| m{4cm} | m{2.5cm}  |} 
+  \hline
+  \textbf{Comando}& \textbf{Elemento} & \textbf{Descrição} & \textbf{Dependências}\\ 
+  \hline
+  \centering 1 & \centering Ponto & Cria elemento esfera de raio 1, nas cores (0,0,191) & --//--\\ 
+  \hline
+  \centering 2 & \centering Linha & Cria elemento Linha utilizando os dois últimos pontos registrados & Dois Pontos\\ 
+  \hline
+  \centering 3 & \centering Plano & Cria elemento Plano utilizando os três últimos pontos registrados & Três Pontos\\ 
+  \hline
+  \centering 4 & \centering Círculo & Cria elemento Círculo utilizando os três últimos pontos registrados e executa o caminho calculado em modo CNC & Três pontos \\ 
+  \hline
+  \centering i & \centering Plano (Mínimos Quadrados) & Cria elemento plano utilizando todos os pontos já registrados & Ao menos 3 pontos \\ 
+  \hline
+  \centering 6 & \centering Ângulo entre vetores & Calcula o ângulo interno e externo para duas linhas coplanares & Duas Linhas \\ 
+  \hline
+\end{tabular}
+\end{center}
+\newpage
+
+
+\section{Funções de Visualização}
+\paragraph{1}
+Utilize os atalhos do teclado abaixo para exibir/ocultar elementos gráficos e executar demonstrações gráficas no software.
+
+\begin{center}
+\begin{tabular}{ | m{4.5em} | m{4cm} | m{6cm} |} 
+  \hline
+  \textbf{Comando}& \textbf{Função} & \textbf{Descrição} \\ 
+  \hline
+  
+  \centering H & \centering Homing & Executa em modo CNC o Homing da máquina, terminando na posição (5,5,5) \\ 
+  \hline
+  \centering O & \centering Centro & Executa em modo CNC a posição central do cubo volumétrico da máquina \\ 
+  \hline
+  \centering 8 & \centering [Demo] Warm-up & Executa em modo CNC 1 ciclo de posições geométricas do Warm-up de Máquinas Zeiss \\ 
+  \hline
+  \centering 9 & \centering [Demo] Elementos Geométricos I & Executa cinemática de Elementos Geométricos de Ponto, Linha, Plano e Círculo \\
+  \hline
+  \centering 0 & \centering Debug Pontos e Posição & Exibe na janela do terminal a posição global e local da máquina e a lista de coordenadas locais e globais dos pontos registrados\\ 
+  \hline
+  \centering V & \centering Volume de medição & Exibe ou oculta o cubo volumétrico dos limites de movimento da máquina \\   \hline
+  \centering 5 & \centering Comando em cadeia de Texto & "RECALL": Executa a posição de todos os pontos registrados \\ 
+  
+  \hline
+\end{tabular}
+\end{center}
+
+
+
+
+
+
+
+\end{document}
