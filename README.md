@@ -47,19 +47,16 @@ Para instalar o Navigator, siga estas etapas:
 - Baixe o arquivo Navigator.py e deixe-o no mesmo diretório dos arquivos .STL
 - Execute o código!
 
-## ☕ Usando Navigator
+## Usando Navigator
 
-Utilize estes comandos do teclado para utilizar Navigator:
+Consulte o arquivo "manual navigator.sty" para visualizar todos os comandos disponíveis. Abaixo estão os comandos simples para controle da máquina e criação de elementos geométricos
 
-- Use as setas para se movimentar no espaço
-- Use "0" para listar a posição atual do centro do Sensor de apalpação no sistema de coordenadas da máquina e no sistema de coordenadas global
-- Use "1" para registrar as coordenadas de um Ponto no espaço
-- Use "2" para criar uma Linha usando os dois últimos pontos registrados
-- Use "4" para criar um Círculo e então Navigator executará a trajetória deste objeto em modo CNC
-- Use "6" para calcular o ângulo interno e externo entre duas linhas coplanares usando os últimos 4 pontos registrados
-- Use "7" para criar um Plano usando os três últimos pontos registrados
-- Use "8" para executar o programa de warm-up em modo CNC, inspirado no comando Shift + Return + F10 das MMCs Zeiss
-- Use "9" para executar a demonstração igualzinha ao do vídeo do projeto no YouTube!
+<img src="img_tutorial_movimento.png" alt="Comandos para movimento">
+
+<img src="img_tutorial_elementos.png" alt="Comandos para elementos geométricos">
+
+
+
 
 #### Referências:
 - Engrenagem "SPUR D12 Z2 17 AP20" obtida de: https://khkgears2.net/catalog2/SS2-17
