@@ -961,13 +961,18 @@ def keypress_callback(obj, event):
                                 path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-2]))
             
             ##### CASTRO 08/03/2026 - AGORA TEM PLANO COM AJUSTE DE MÍNIMOS QUADRADOS
-            elif key == '4':                
+            elif key == '4':
+                print('\nKEY ',key)
+                print('>>> CREATE PLANE MINIMUM SQUARE')
 
-                points = []
-                for p in range(len(cmm_position)):
-                    points.append(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[p]))
+                if check_cnc_position_list(cmm_position,2) == 0:
+                    print('>>> NOT ENOUGH ELEMENTS AVAILABLE')                
+                else:
+                    points = []
+                    for p in range(len(cmm_position)):
+                        points.append(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[p]))
 
-                create_plane_min_sq(points, 1, 1)
+                    create_plane_min_sq(points, 1, 1)
 
             elif key == '3':
                 print('\nKEY ',key)
