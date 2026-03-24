@@ -28,13 +28,14 @@ Este documento mostra os atalhos de teclado para controle da máquina, executar 
 \newpage
 
 \section{Comandos básicos de movimento}
-\paragraph{1}
-Durante o uso do software, use os comandos abaixo para se movimentar dentro do volume permitido pela máquina.
 
+\paragraph{}
+%Durante o uso do software, use os comandos abaixo para se movimentar dentro do volume %permitido pela máquina.
+%
 \begin{center}
 \begin{tabular}{ | m{2 cm} | m{3cm} |} 
   \hline
-  \textbf{Comando}& \textbf{Descrição} \\ 
+  \centering \textbf{Comando}& \textbf{Descrição} \\ 
   \hline
   \centering ↑ &  Movimento em +Y \\ 
   \hline
@@ -44,23 +45,22 @@ Durante o uso do software, use os comandos abaixo para se movimentar dentro do v
   \hline
   \centering → & Movimento em +X \\ 
   \hline
-  \centering "m" ou "M" & Movimento em -Z \\ 
-  \hline
   \centering "k" ou "K" & Movimento em +Z \\ 
   \hline
-  
+  \centering "m" ou "M" & Movimento em -Z \\ 
+  \hline
 \end{tabular}
 \end{center}
 \newpage
 
 \section{Funções Vetoriais}
-\paragraph{1}
-Durante o uso do software, use o teclado numérico para registrar pontos, criar elementos geométricos, e alterar a visualização de elementos-chave do software.
+%\paragraph{1}
+%Durante o uso do software, use o teclado numérico para registrar pontos, criar elementos %geométricos, e alterar a visualização de elementos-chave do software.
 
 \begin{center}
 \begin{tabular}{ | m{2 cm} | m{2cm}| m{4cm} | m{2.5cm}  |} 
   \hline
-  \textbf{Comando}& \textbf{Elemento} & \textbf{Descrição} & \textbf{Dependências}\\ 
+  \centering \textbf{Comando}& \textbf{Elemento} & \textbf{Descrição} & \textbf{Dependências}\\ 
   \hline
   \centering 1 & \centering Ponto & Cria elemento esfera de raio 1, nas cores (0,0,191) & --//--\\ 
   \hline
@@ -68,9 +68,9 @@ Durante o uso do software, use o teclado numérico para registrar pontos, criar 
   \hline
   \centering 3 & \centering Plano & Cria elemento Plano utilizando os três últimos pontos registrados & Três Pontos\\ 
   \hline
-  \centering 4 & \centering Círculo & Cria elemento Círculo utilizando os três últimos pontos registrados e executa o caminho calculado em modo CNC & Três pontos \\ 
+  \centering 4 & \centering Plano (MMQ) & Cria elemento plano utilizando todos os pontos já registrados & Ao menos 3 pontos \\ 
   \hline
-  \centering i & \centering Plano (Mínimos Quadrados) & Cria elemento plano utilizando todos os pontos já registrados & Ao menos 3 pontos \\ 
+  \centering 5 & \centering Círculo & Cria elemento Círculo utilizando os três últimos pontos registrados e executa o caminho calculado em modo CNC & Três pontos \\ 
   \hline
   \centering 6 & \centering Ângulo entre vetores & Calcula o ângulo interno e externo para duas linhas coplanares & Duas Linhas \\ 
   \hline
@@ -86,7 +86,7 @@ Utilize os atalhos do teclado abaixo para exibir/ocultar elementos gráficos e e
 \begin{center}
 \begin{tabular}{ | m{4.5em} | m{4cm} | m{6cm} |} 
   \hline
-  \textbf{Comando}& \textbf{Função} & \textbf{Descrição} \\ 
+  \centering \textbf{Comando}& \textbf{Função} & \textbf{Descrição} \\ 
   \hline
   
   \centering H & \centering Homing & Executa em modo CNC o Homing da máquina, terminando na posição (5,5,5) \\ 
@@ -100,7 +100,7 @@ Utilize os atalhos do teclado abaixo para exibir/ocultar elementos gráficos e e
   \centering 0 & \centering Debug Pontos e Posição & Exibe na janela do terminal a posição global e local da máquina e a lista de coordenadas locais e globais dos pontos registrados\\ 
   \hline
   \centering V & \centering Volume de medição & Exibe ou oculta o cubo volumétrico dos limites de movimento da máquina \\   \hline
-  \centering 5 & \centering Comando em cadeia de Texto & "RECALL": Executa a posição de todos os pontos registrados \\ 
+  \centering D & \centering Comando em cadeia de Texto & "RECALL": Executa a posição de todos os pontos registrados \\ 
   
   \hline
 \end{tabular}
