@@ -10,14 +10,14 @@ from vtkmodules.vtkRenderingCore import (vtkActor,vtkPolyDataMapper)
 
 from vtkmodules.vtkCommonColor import vtkNamedColors
 
-move_step =                     10
+move_step =                     1
 speed =                         640
 e_sftlck_state =                False
 scale =                         0.75
-override_pos_limits_flag =     1
+override_pos_limits_flag =      1
 user_axis_control =             True
 i =                             0
-c =                                     100
+c =                             100
 cnc_mode_state =                False
 show_volume_bounds =            True
 cmm_position =                  [] 
@@ -961,7 +961,7 @@ def keypress_callback(obj, event):
                                 path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-2]))
             
             ##### CASTRO 08/03/2026 - AGORA TEM PLANO COM AJUSTE DE MÍNIMOS QUADRADOS
-            elif key == 'i':                
+            elif key == '4':                
 
                 points = []
                 for p in range(len(cmm_position)):
@@ -1259,7 +1259,7 @@ def keypress_callback(obj, event):
                     camera.SetRoll(80)
                     camera_translate_in_scene((-100,-7000,0))
 
-            elif key == '4':                                             ## INPUT COMMAND
+            elif key == '5':                                             ## INPUT COMMAND
                 print('\nKEY ',key)
                 print('>>> CREATE CIRCLE')
 
@@ -1291,7 +1291,7 @@ def keypress_callback(obj, event):
                     actor3_position = translate[1]
                     actor2_position = translate[2]
 
-            elif key == '5':                                             ## INPUT COMMAND
+            elif key == 'D':                                             ## INPUT COMMAND
                 print("key ",key)
                 command = input("> NAVIGATOR: ")
 
