@@ -10,17 +10,18 @@ from vtkmodules.vtkRenderingCore import (vtkActor,vtkPolyDataMapper)
 
 from vtkmodules.vtkCommonColor import vtkNamedColors
 
-move_step =                     1
+move_step =                     10
 speed =                         640
 e_sftlck_state =                False
 scale =                         0.75
-override_pos_limits_flag =      1
+override_pos_limits_flag =      0
 user_axis_control =             True
 i =                             0
 c =                             100
 cnc_mode_state =                False
 show_volume_bounds =            True
 cmm_position =                  [] 
+sphere_list =                   [] 
 
 global_volumetric_limits = [230,      # -X
                             775,      # +X
@@ -300,31 +301,6 @@ def calculate_avg_point(p0,p1,p2):
 
     return x,y,z
 
-""""
-def create_circle(p0,p1,p2):
-
-    polygonSource = vtkRegularPolygonSource()
-    polygonSource.GeneratePolygonOff()
-    polygonSource.SetNumberOfSides(50)                                           
-    polygonSource.SetCenter(calculate_avg_point(p0,p1,p2))                                   
-    polygonSource.SetRadius(max(calculate_linear_distance(p0,p1),
-                                calculate_linear_distance(p1,p2),
-                                calculate_linear_distance(p2,p0))/2)
-    #create_sphere(calculate_avg_point(p0,p1,p2),8,(1,1,1))
-    polygonSource.SetNormal(create_plane(p0,p1,p2,0)[1])
-    polygonSource.Update()
-    #print("DISTANCE P0-P1",calculate_linear_distance(p0,p1))
-    #print("DISTANCE P1-P2",calculate_linear_distance(p1,p2))
-    mapper = vtkPolyDataMapper()
-    mapper.SetInputConnection(polygonSource.GetOutputPort())
-    actor = vtkActor()
-    actor.SetMapper(mapper)
-    actor.GetProperty().SetColor(1,1,1)
-
-    renderer.AddActor(actor)
-    renderWindow.Render()
-    return actor
-"""
 
 def create_circle(p0,p1,p2):
 
@@ -682,7 +658,55 @@ def create_plane(p0, p1, p2, opacity, sceneNormalactor):
     renderWindow.Render()
     return actor, planeNormal, planeSource, v1, center[2]
 
-def create_sphere(center, radius, color):
+def trilateration(sphere_list_a):
+    
+    A = []
+    B = []
+
+    (x0, y0, z0), r0 = sphere_list_a[0]
+
+    for i in range(len(sphere_list)):
+        print(f'> ESFERA {i}:{sphere_list[i]}')
+        i+=1
+
+    for i in range(1, len(sphere_list_a)):
+        (xi, yi, zi), ri = sphere_list_a[i]
+        
+        linha_a = [
+            -2 * (xi - x0),
+            -2 * (yi - y0),
+            -2 * (zi - z0)
+        ]
+        A.append(linha_a)
+        
+        termo_raios = ri**2 - r0**2
+        termo_coords = (xi**2 - x0**2) + (yi**2 - y0**2) + (zi**2 - z0**2)
+        
+        B.append(termo_raios - termo_coords)
+
+    print('> MATRIZ A:', A)
+    print('> MATRIZ B:', B)
+
+    A_np = np.array(A)[:, :2]
+    B_np = np.array(B)
+
+    pos_2d = np.linalg.solve(A_np, B_np)
+    xp, yp = pos_2d[0], pos_2d[1]
+
+    dist_horizontal_sq = (xp - x0)**2 + (yp - y0)**2
+    z_diff = np.sqrt(max(0, r0**2 - dist_horizontal_sq))
+
+    resultado_1 = (xp, yp, z0 + z_diff)
+    resultado_2 = (xp, yp, z0 - z_diff)
+    resultado_1 = tuple(float(x) for x in resultado_1)
+    resultado_2 = tuple(float(x) for x in resultado_2)
+
+    print('RESULTADO 1:',resultado_1)
+    print('RESULTADO 2:',resultado_2)
+
+    return resultado_1, resultado_2
+
+def create_sphere(center, radius, color, opacity=1):
     sphereSource = vtk.vtkSphereSource()
     sphereSource.SetCenter(center)
     sphereSource.SetRadius(radius)
@@ -693,12 +717,16 @@ def create_sphere(center, radius, color):
     sphere_actor = vtk.vtkActor()
     sphere_actor.SetMapper(mapper)
     sphere_actor.GetProperty().SetColor(*color)
-    sphere_actor.GetProperty().SetOpacity(1)
+    sphere_actor.GetProperty().SetOpacity(opacity)
     sphere_actor.GetProperty().SetEdgeVisibility(False)
     renderer.AddActor(sphere_actor)
     renderWindow.Render()
-    
-    return sphere_actor
+
+    if opacity != 1:
+        print('> CENTER:',center)
+        print('> RADIUS:',radius)
+
+    return sphere_actor, center, radius
 
 def create_volume_box_actor(limits, color):
     x_min, x_max, y_min, y_max, z_min, z_max = limits
@@ -937,11 +965,11 @@ def keypress_callback(obj, event):
                 print('>>> REGISTER CMM POSITION')
                 print('get_local_current_position: ', get_local_current_position(local_axes,local_origin,actor4_position))
                 
-                renderer.AddActor(create_sphere((actor4_position[0],
+                create_sphere((actor4_position[0],
                                                  actor4_position[1],
                                                  actor4_position[2]),
                                                  4,
-                                                 (0,0,0.75)))
+                                                 (0,0,0.75))
                 cmm_position.append(get_local_current_position(local_axes,local_origin,actor4_position))
                 #update_coordinate_window(coord_text_actor, cmm_position)
                 #coord_window.Render()   
@@ -1278,20 +1306,21 @@ def keypress_callback(obj, event):
                     
                     local_current_position = get_local_current_position(local_axes,local_origin,actor4_position)
 
-                    #for i in circle[1]:
-                    #    translate = translate_in_volume(actor4_position,
-                    #                                    actor3_position,
-                    #                                    actor2_position,
-                    #                                    (get_local_current_position(local_axes,local_origin,i[0])[0]),
-                    #                                    (get_local_current_position(local_axes,local_origin,i[1])[1]),
-                    #                                    (get_local_current_position(local_axes,local_origin,i[2])[2]))
-                    #    actor4_position = translate[0]
-                    #    actor3_position = translate[1]
-                    #    actor2_position = translate[2]
-                    #    renderWindow.Render()
-#
-                    #    #t.sleep(0.01)
+                    for i in circle[1]:
+                        translate = translate_in_volume(actor4_position,
+                                                        actor3_position,
+                                                        actor2_position,
+                                                        (get_local_current_position(local_axes,local_origin,i[0])[0]),
+                                                        (get_local_current_position(local_axes,local_origin,i[1])[1]),
+                                                        (get_local_current_position(local_axes,local_origin,i[2])[2]))
+                        actor4_position = translate[0]
+                        actor3_position = translate[1]
+                        actor2_position = translate[2]
+                        renderWindow.Render()
 
+                        #t.sleep(0.01)
+                    
+                    renderWindow.Render()
                     actor4_position = translate[0]
                     actor3_position = translate[1]
                     actor2_position = translate[2]
@@ -1431,9 +1460,31 @@ def keypress_callback(obj, event):
                     renderWindow.Render()
                     t.sleep(sleep)
                 if occurence == 0:
-                    cnc_mode_switch()              
+                    cnc_mode_switch()  
 
-            elif key == '6':
+            elif key == '6':       
+                print('\nKEY ',key)
+                print('>>> CREATE SPHERE')
+                
+                sphere_actor , center, radius = create_sphere((actor4_position[0],
+                                                 actor4_position[1],
+                                                 actor4_position[2]),
+                                                 50,
+                                                 (0.75,0,0.75),
+                                                 .25)
+                
+                sphere_list.append((center,radius))
+            
+            elif key == 'T':       
+                print('\nKEY ',key)
+                print('>>> TRILATERATION')
+
+                center1, center2 = trilateration(sphere_list[-3:])
+
+                create_sphere((center1[0],center1[1],center1[2],), 4, (0,0,0), 1)
+                create_sphere((center2[0],center2[1],center2[2],), 4, (0,0,0), 1)
+
+            elif key == '7':
                 calculate_angle_between_vectors(create_vector(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-3]),
                                                 path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-4]),
                                                 1),
