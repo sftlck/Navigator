@@ -206,13 +206,13 @@ def sync_actors_movement(actor4_position,actor3_position,actor2_position,pos):
     return actor4_position, actor3_position, actor2_position
 
 def path_from_local_to_global_coordinates(local_origin,local_axes,local_linear_path):
-    print('CALCULATING GLOBAL LINEAR PATH')
+    print('\n> CALCULATING GLOBAL LINEAR PATH')
     global_points = local_origin + (local_axes @ local_linear_path.T).T
     print(global_points)
     return global_points
 
 def calculate_linear_distance(local_current_position,new_position):
-    print('CALCULATING LINEAR DISTANCE')
+    print('\n> CALCULATING LINEAR DISTANCE')
     #distance = new_position - local_current_position
     distance = np.linalg.norm(new_position - local_current_position)
     print(float(distance))
@@ -574,12 +574,10 @@ def create_plane_min_sq(points, opacity, sceneNormalactor):
     
     print(">>> PLANE NORMAL:", planeNormal)
     print(">>> PLANE CENTER:", center)
-    print(">>> PLANE SIZE:", u_max - u_min, "x", v_max - v_min)
     
     renderWindow.Render()
     
     return actor, planeNormal, planeSource
-
 
 def create_plane(p0, p1, p2, opacity, sceneNormalactor):
     print('\n>>> CREATE PLANE')
@@ -657,6 +655,151 @@ def create_plane(p0, p1, p2, opacity, sceneNormalactor):
     print(">>> PLANE NORMAL:", planeNormal)
     renderWindow.Render()
     return actor, planeNormal, planeSource, v1, center[2]
+
+def create_plane_params(a, b, c, sphere_center, opacity, sceneNormalactor=1):
+    print('\n>>> CREATE PLANE PARAMS')
+    print('> SPHERE CENTER:', sphere_center)
+    print('> LOCAL a',a)
+    print('> LOCAL b',b)
+    print('> LOCAL c',c)
+    
+    sphere_center = np.asarray(sphere_center, dtype=np.float64)
+    local_normal = np.asarray([a, b, c], dtype=np.float64)
+    
+    local_normal = local_normal / np.linalg.norm(local_normal)
+    
+    center = sphere_center
+    
+    global_normal = local_axes @ local_normal
+    
+    print('\n> GLOBAL NORMAL:', global_normal)
+    print('> PLANE CENTER:', center)
+    
+    planeSource = vtk.vtkPlaneSource()
+    
+    if abs(global_normal[0]) < 0.9:
+        v1 = np.cross(global_normal, [1, 0, 0])
+    else:
+        v1 = np.cross(global_normal, [0, 1, 0])
+    v1 = v1 / np.linalg.norm(v1)
+    v2 = np.cross(global_normal, v1)
+    v2 = v2 / np.linalg.norm(v2)
+    
+    plane_size = 100
+    p0 = center - (plane_size/2)*v1 - (plane_size/2)*v2
+    p1 = center + (plane_size/2)*v1 - (plane_size/2)*v2
+    p2 = center - (plane_size/2)*v1 + (plane_size/2)*v2
+    
+    planeSource.SetOrigin(p0)
+    planeSource.SetPoint1(p1)
+    planeSource.SetPoint2(p2)
+    
+    # Mapper e actors
+    mapper = vtk.vtkPolyDataMapper()
+    mapper.SetInputConnection(planeSource.GetOutputPort())
+    
+    actor = vtk.vtkActor()
+    actor.SetMapper(mapper)
+    actor.GetProperty().SetOpacity(0)  # Transparent fill
+    
+    wireframeMapper = vtk.vtkPolyDataMapper()
+    wireframeMapper.SetInputConnection(planeSource.GetOutputPort())
+    
+    wireframeActor = vtk.vtkActor()
+    wireframeActor.SetMapper(wireframeMapper)
+    wireframeActor.GetProperty().SetRepresentationToWireframe()
+    wireframeActor.GetProperty().SetColor(39/255, 221/255, 232/255)
+    wireframeActor.GetProperty().SetLineWidth(2)
+    wireframeActor.GetProperty().SetLighting(False)
+    wireframeActor.GetProperty().SetOpacity(opacity)
+    
+    # Atualiza para obter o normal
+    planeSource.Update()
+    planeNormal = planeSource.GetNormal()
+    A, B, C = planeNormal
+    
+    # Calcula D para a equação do plano: Ax + By + Cz + D = 0
+    D = -(A*center[0] + B*center[1] + C*center[2])
+    print(f"> PLANE EQUATION: {A}x + {B}y + {C}z + {D} = 0")
+    print(f"> NORMAL VECTOR: ({A}, {B}, {C})")
+    
+    if sceneNormalactor == 1:
+        # Desenha as bordas do plano
+        featureEdges = vtk.vtkFeatureEdges()
+        featureEdges.SetInputConnection(planeSource.GetOutputPort())
+        featureEdges.BoundaryEdgesOn()
+        featureEdges.FeatureEdgesOff()
+        featureEdges.ManifoldEdgesOff()
+        featureEdges.NonManifoldEdgesOff()
+        
+        edgeMapper = vtk.vtkPolyDataMapper()
+        edgeMapper.SetInputConnection(featureEdges.GetOutputPort())
+        
+        edgeActor = vtk.vtkActor()
+        edgeActor.SetMapper(edgeMapper)
+        edgeActor.GetProperty().SetColor(1, 1, 1)
+        edgeActor.GetProperty().SetLineWidth(0.5)
+        
+        end_point = center + global_normal * 50
+        create_vector(end_point.tolist(), center.tolist(), 1)
+        
+        renderer.AddActor(edgeActor)
+    
+    renderer.AddActor(actor)
+    renderer.AddActor(wireframeActor)
+    print(">>> PLANE NORMAL:", planeNormal)
+    renderWindow.Render()
+    
+    return actor, planeNormal, planeSource, center
+
+
+def trilateration2(sphere_list_a):
+    
+    A = []
+    B = []
+
+    (x0, y0, z0), r0 = sphere_list_a[0]
+
+    for i in range(len(sphere_list)):
+        print(f'> ESFERA {i}:{sphere_list[i]}')
+        i+=1
+
+    for i in range(1, len(sphere_list_a)):
+        (xi, yi, zi), ri = sphere_list_a[i]
+        
+        linha_a = [-2 * (xi - x0), -2 * (yi - y0), -2 * (zi - z0)]
+        A.append(linha_a)
+        a,b,c = linha_a
+
+        create_plane_params(a, b, c, (xi, yi, zi),1, sceneNormalactor=1)
+
+        termo_raios = ri**2 - r0**2
+        termo_coords = (xi**2 - x0**2) + (yi**2 - y0**2) + (zi**2 - z0**2)
+        
+        B.append(termo_raios - termo_coords)
+        
+    print('> MATRIZ A:', A)
+    print('> MATRIZ B:', B)
+
+    A_np = np.array(A)[:, :2]
+    B_np = np.array(B)
+
+    pos_2d = np.linalg.solve(A_np, B_np)
+    xp, yp = pos_2d[0], pos_2d[1]
+
+    dist_horizontal_sq = (xp - x0)**2 + (yp - y0)**2
+    z_diff = np.sqrt(max(0, r0**2 - dist_horizontal_sq))
+
+    resultado_1 = (xp, yp, z0 + z_diff)
+    resultado_2 = (xp, yp, z0 - z_diff)
+    resultado_1 = tuple(float(x) for x in resultado_1)
+    resultado_2 = tuple(float(x) for x in resultado_2)
+
+    print('RESULTADO 1:',resultado_1)
+    print('RESULTADO 2:',resultado_2)
+
+    return resultado_1, resultado_2
+
 
 def trilateration(sphere_list_a):
     
@@ -1477,9 +1620,9 @@ def keypress_callback(obj, event):
             
             elif key == 'T':       
                 print('\nKEY ',key)
-                print('>>> TRILATERATION')
+                print('>>> TRILATERATION2')
 
-                center1, center2 = trilateration(sphere_list[-3:])
+                center1, center2 = trilateration2(sphere_list[-3:])
 
                 create_sphere((center1[0],center1[1],center1[2],), 4, (0,0,0), 1)
                 create_sphere((center2[0],center2[1],center2[2],), 4, (0,0,0), 1)
