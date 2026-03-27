@@ -301,6 +301,50 @@ def calculate_avg_point(p0,p1,p2):
 
     return x,y,z
 
+def create_circle_params(center_coords, normal_vector, radius):
+    x,y,z = center_coords
+    print('\n>>> CREATE CIRCLE PARAMS')
+    
+    center = np.array(center_coords, dtype=np.float64)
+    normal = np.array(normal_vector, dtype=np.float64)
+    
+    norma = np.linalg.norm(normal)
+    if norma > 0.0001:
+        normal = normal / norma
+    else:
+        normal = np.array([0, 0, 1])
+
+    polygonSource = vtk.vtkRegularPolygonSource()
+    
+    polygonSource.GeneratePolygonOff()    
+    polygonSource.SetNumberOfSides(360)   
+    polygonSource.SetCenter(center)       
+    polygonSource.SetNormal(normal)       
+    polygonSource.SetRadius(radius)       
+    
+    polygonSource.Update()
+
+    mapper = vtk.vtkPolyDataMapper()
+    mapper.SetInputConnection(polygonSource.GetOutputPort())
+    
+    actor = vtk.vtkActor()
+    actor.SetMapper(mapper)
+    
+    actor.GetProperty().SetColor(39/255, 221/255, 232/255)
+    actor.GetProperty().SetLineWidth(2)
+
+    poly_data = polygonSource.GetOutput()
+    points = poly_data.GetPoints()
+    circumference_points = []
+    
+    for i in range(points.GetNumberOfPoints()):
+        point = points.GetPoint(i)
+        circumference_points.append(point)
+
+    renderer.AddActor(actor)
+    renderWindow.Render()
+    
+    return actor, circumference_points
 
 def create_circle(p0,p1,p2):
 
@@ -664,14 +708,18 @@ def create_plane_params(a, b, c, sphere_center, opacity, sceneNormalactor=1):
     print('> LOCAL c',c)
     
     sphere_center = np.asarray(sphere_center, dtype=np.float64)
-    local_normal = np.asarray([a, b, c], dtype=np.float64)
+    global_normal = np.asarray((a,b,c), dtype=np.float64)
     
-    local_normal = local_normal / np.linalg.norm(local_normal)
+    # Normalizamos o vetor para garantir (importante!)
+    norma = np.linalg.norm(global_normal)
+    if norma > 0.001:
+        global_normal = global_normal / norma
+    else:
+        # Fallback caso a normal seja inválida (esferas no mesmo ponto)
+        global_normal = np.array([0, 0, 1]) 
     
     center = sphere_center
-    
-    global_normal = local_axes @ local_normal
-    
+
     print('\n> GLOBAL NORMAL:', global_normal)
     print('> PLANE CENTER:', center)
     
@@ -752,102 +800,72 @@ def create_plane_params(a, b, c, sphere_center, opacity, sceneNormalactor=1):
     
     return actor, planeNormal, planeSource, center
 
+import numpy as np
 
 def trilateration2(sphere_list_a):
-    
     A = []
     B = []
-
+    
     (x0, y0, z0), r0 = sphere_list_a[0]
-
-    for i in range(len(sphere_list)):
-        print(f'> ESFERA {i}:{sphere_list[i]}')
-        i+=1
-
+    
     for i in range(1, len(sphere_list_a)):
         (xi, yi, zi), ri = sphere_list_a[i]
         
-        linha_a = [-2 * (xi - x0), -2 * (yi - y0), -2 * (zi - z0)]
+        d = np.sqrt((xi - x0)**2 + (yi - y0)**2 + (zi - z0)**2)
+        
+        linha_a = [2 * (xi - x0), 2 * (yi - y0), 2 * (zi - z0)]
         A.append(linha_a)
-        a,b,c = linha_a
+        a, b, c = linha_a
 
-        create_plane_params(a, b, c, (xi, yi, zi),1, sceneNormalactor=1)
-
-        termo_raios = ri**2 - r0**2
-        termo_coords = (xi**2 - x0**2) + (yi**2 - y0**2) + (zi**2 - z0**2)
+        h = (r0**2 - ri**2 + d**2) / (2 * d)
+        t = h / d  
         
-        B.append(termo_raios - termo_coords)
+        c_x = x0 + t * (xi - x0)
+        c_y = y0 + t * (yi - y0)
+        c_z = z0 + t * (zi - z0)
         
-    print('> MATRIZ A:', A)
-    print('> MATRIZ B:', B)
+        radius = np.sqrt(max(0, r0**2 - h**2))
 
-    A_np = np.array(A)[:, :2]
-    B_np = np.array(B)
+        res_plane = create_plane_params(a, b, c, (c_x, c_y, c_z), 0.1, sceneNormalactor=1)
+        planeNormal = res_plane[1]
+        create_circle_params((c_x, c_y, c_z), planeNormal, radius)
 
-    pos_2d = np.linalg.solve(A_np, B_np)
-    xp, yp = pos_2d[0], pos_2d[1]
+        term_r = r0**2 - ri**2
+        term_x = x0**2 - xi**2
+        term_y = y0**2 - yi**2
+        term_z = z0**2 - zi**2
+        
+        B.append(term_r - term_x - term_y - term_z)
 
-    dist_horizontal_sq = (xp - x0)**2 + (yp - y0)**2
-    z_diff = np.sqrt(max(0, r0**2 - dist_horizontal_sq))
-
-    resultado_1 = (xp, yp, z0 + z_diff)
-    resultado_2 = (xp, yp, z0 - z_diff)
-    resultado_1 = tuple(float(x) for x in resultado_1)
-    resultado_2 = tuple(float(x) for x in resultado_2)
-
-    print('RESULTADO 1:',resultado_1)
-    print('RESULTADO 2:',resultado_2)
-
-    return resultado_1, resultado_2
-
-
-def trilateration(sphere_list_a):
     
-    A = []
-    B = []
-
-    (x0, y0, z0), r0 = sphere_list_a[0]
-
-    for i in range(len(sphere_list)):
-        print(f'> ESFERA {i}:{sphere_list[i]}')
-        i+=1
-
-    for i in range(1, len(sphere_list_a)):
-        (xi, yi, zi), ri = sphere_list_a[i]
-        
-        linha_a = [
-            -2 * (xi - x0),
-            -2 * (yi - y0),
-            -2 * (zi - z0)
-        ]
-        A.append(linha_a)
-        
-        termo_raios = ri**2 - r0**2
-        termo_coords = (xi**2 - x0**2) + (yi**2 - y0**2) + (zi**2 - z0**2)
-        
-        B.append(termo_raios - termo_coords)
-
     print('> MATRIZ A:', A)
     print('> MATRIZ B:', B)
 
-    A_np = np.array(A)[:, :2]
+    A_np = np.array(A)[:, :2] 
     B_np = np.array(B)
 
-    pos_2d = np.linalg.solve(A_np, B_np)
+    pos_2d, residuals, rank, s = np.linalg.lstsq(A_np, B_np, rcond=None)
     xp, yp = pos_2d[0], pos_2d[1]
 
-    dist_horizontal_sq = (xp - x0)**2 + (yp - y0)**2
-    z_diff = np.sqrt(max(0, r0**2 - dist_horizontal_sq))
+    term_x = (xp - x0)**2
+    term_y = (yp - y0)**2
+    
+    z_diff_sq = r0**2 - (term_x + term_y)
+    z_diff = np.sqrt(max(0, z_diff_sq))
 
     resultado_1 = (xp, yp, z0 + z_diff)
     resultado_2 = (xp, yp, z0 - z_diff)
-    resultado_1 = tuple(float(x) for x in resultado_1)
-    resultado_2 = tuple(float(x) for x in resultado_2)
+    
+    resultado_1 = tuple(map(float, resultado_1))
+    resultado_2 = tuple(map(float, resultado_2))
 
-    print('RESULTADO 1:',resultado_1)
-    print('RESULTADO 2:',resultado_2)
+    print(f'\n   > XP: {xp:.6f}, YP: {yp:.6f}')
+    print(f'   > Z_DIFF: {z_diff:.6f}')
+    print('   > RESULTADO 1:', resultado_1)
+    print('   > RESULTADO 2:', resultado_2)
 
     return resultado_1, resultado_2
+
 
 def create_sphere(center, radius, color, opacity=1):
     sphereSource = vtk.vtkSphereSource()
@@ -1612,20 +1630,21 @@ def keypress_callback(obj, event):
                 sphere_actor , center, radius = create_sphere((actor4_position[0],
                                                  actor4_position[1],
                                                  actor4_position[2]),
-                                                 50,
+                                                 150,
                                                  (0.75,0,0.75),
-                                                 .25)
+                                                 .05)
                 
                 sphere_list.append((center,radius))
             
-            elif key == 'T':       
+            elif key == 'T':  
+
                 print('\nKEY ',key)
                 print('>>> TRILATERATION2')
 
                 center1, center2 = trilateration2(sphere_list[-3:])
 
-                create_sphere((center1[0],center1[1],center1[2],), 4, (0,0,0), 1)
-                create_sphere((center2[0],center2[1],center2[2],), 4, (0,0,0), 1)
+                create_sphere((center1[0],center1[1],center1[2]), 4, (1,1,1), 1)
+                create_sphere((center2[0],center2[1],center2[2]), 4, (1,1,1), 1)
 
             elif key == '7':
                 calculate_angle_between_vectors(create_vector(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-3]),
