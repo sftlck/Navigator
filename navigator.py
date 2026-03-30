@@ -113,7 +113,8 @@ def check_cnc_position_list(cmm_position,type):
         return 0
     elif cmm_position_list_length < 3 and type == 2:                #TYPE 2: PLANE
         return 0
-    
+    elif cmm_position_list_length < 4 and type == 3:                #TYPE 2: SPHERE
+        return 0
     else:
         return cmm_position
 
@@ -802,69 +803,114 @@ def create_plane_params(a, b, c, sphere_center, opacity, sceneNormalactor=1):
 
 import numpy as np
 
-def trilateration2(sphere_list_a):
-    A = []
-    B = []
+def sphere_intersections_3(sphere_list_a):
+    if len(sphere_list_a) < 3:
+        raise ValueError("> ERROR: NEED AT LEAST 3 SPHERES")
+
+    (x1, y1, z1), r1 = sphere_list_a[0]
+    (x2, y2, z2), r2 = sphere_list_a[1]
+    (x3, y3, z3), r3 = sphere_list_a[2]
+
+    P1 = np.array([x1, y1, z1])
+    P2 = np.array([x2, y2, z2])
+    P3 = np.array([x3, y3, z3])
+
+    ex = P2 - P1
+    d = np.linalg.norm(ex)
     
-    (x0, y0, z0), r0 = sphere_list_a[0]
+    if d == 0:
+        
+        return None
+        
+    ex = ex / d
+
+    i = np.dot(ex, P3 - P1)
+    ey = P3 - P1 - i * ex
+    ey_norm = np.linalg.norm(ey)
     
-    for i in range(1, len(sphere_list_a)):
-        (xi, yi, zi), ri = sphere_list_a[i]
+    if ey_norm == 0:
         
-        d = np.sqrt((xi - x0)**2 + (yi - y0)**2 + (zi - z0)**2)
+        return None
         
-        linha_a = [2 * (xi - x0), 2 * (yi - y0), 2 * (zi - z0)]
-        A.append(linha_a)
-        a, b, c = linha_a
+    ey = ey / ey_norm
+    ez = np.cross(ex, ey)
+    j = np.dot(ey, P3 - P1)
 
-        h = (r0**2 - ri**2 + d**2) / (2 * d)
-        t = h / d  
-        
-        c_x = x0 + t * (xi - x0)
-        c_y = y0 + t * (yi - y0)
-        c_z = z0 + t * (zi - z0)
-        
-        radius = np.sqrt(max(0, r0**2 - h**2))
+    x = (r1**2 - r2**2 + d**2) / (2 * d)
+    y = (r1**2 - r3**2 + i**2 + j**2) / (2 * j) - (i / j) * x
+    
+    z_squared = r1**2 - x**2 - y**2
 
-        res_plane = create_plane_params(a, b, c, (c_x, c_y, c_z), 0.1, sceneNormalactor=1)
-        planeNormal = res_plane[1]
-        create_circle_params((c_x, c_y, c_z), planeNormal, radius)
+    if z_squared < 0:
+        print("Error: The spheres do not intersect.")
+        return None
 
-        term_r = r0**2 - ri**2
-        term_x = x0**2 - xi**2
-        term_y = y0**2 - yi**2
-        term_z = z0**2 - zi**2
-        
-        B.append(term_r - term_x - term_y - term_z)
+    z = np.sqrt(z_squared)
 
     
-    print('> MATRIZ A:', A)
-    print('> MATRIZ B:', B)
-
-    A_np = np.array(A)[:, :2] 
-    B_np = np.array(B)
-
-    pos_2d, residuals, rank, s = np.linalg.lstsq(A_np, B_np, rcond=None)
-    xp, yp = pos_2d[0], pos_2d[1]
-
-    term_x = (xp - x0)**2
-    term_y = (yp - y0)**2
+    a1, b1, c1 = 2 * (P2 - P1) 
     
-    z_diff_sq = r0**2 - (term_x + term_y)
-    z_diff = np.sqrt(max(0, z_diff_sq))
-
-    resultado_1 = (xp, yp, z0 + z_diff)
-    resultado_2 = (xp, yp, z0 - z_diff)
+    C12 = P1 + x * ex 
+    radius12 = np.sqrt(max(0, r1**2 - x**2))
     
-    resultado_1 = tuple(map(float, resultado_1))
-    resultado_2 = tuple(map(float, resultado_2))
+    res_plane_12 = create_plane_params(a1, b1, c1, tuple(C12), 0.1, sceneNormalactor=1)
+    create_circle_params(tuple(C12), res_plane_12[1], radius12)
 
-    print(f'\n   > XP: {xp:.6f}, YP: {yp:.6f}')
-    print(f'   > Z_DIFF: {z_diff:.6f}')
-    print('   > RESULTADO 1:', resultado_1)
-    print('   > RESULTADO 2:', resultado_2)
+    d13 = np.linalg.norm(P3 - P1)
+    dir13 = (P3 - P1) / d13
+    a2, b2, c2 = 2 * (P3 - P1)
+    
+    h13 = (r1**2 - r3**2 + d13**2) / (2 * d13)
+    
+    C13 = P1 + h13 * dir13
+    radius13 = np.sqrt(max(0, r1**2 - h13**2))
+    
+    res_plane_13 = create_plane_params(a2, b2, c2, tuple(C13), 0.1, sceneNormalactor=1)
+    create_circle_params(tuple(C13), res_plane_13[1], radius13)
 
-    return resultado_1, resultado_2
+    resultado_1 = P1 + x * ex + y * ey + z * ez
+    resultado_2 = P1 + x * ex + y * ey - z * ez
+
+    res_1_tuple = tuple(map(float, resultado_1))
+    res_2_tuple = tuple(map(float, resultado_2))
+
+    print(f'\n> RESULTADO 1: {res_1_tuple}')
+    print(f'> RESULTADO 2: {res_2_tuple}')
+
+    return res_1_tuple, res_2_tuple
+
+def create_sphere_min_sq(points):
+
+    i = 0
+    print('')
+    for p in points:
+        print(f'POINT {i}: ({p[0]},{p[1]},{p[2]})')
+        i+=1
+    i = 0
+    
+    points = np.array(points)
+    n = points.shape[0]
+    
+    A = np.zeros((n, 4))
+    A[:, 0] = points[:, 0]  
+    A[:, 1] = points[:, 1]  
+    A[:, 2] = points[:, 2]  
+    A[:, 3] = 1             
+
+    B = np.sum(points**2, axis=1)
+
+    f, residuals, rank, s = np.linalg.lstsq(A, B, rcond=None)
+
+    xc = f[0] / 2
+    yc = f[1] / 2
+    zc = f[2] / 2
+
+    C = f[3]
+    r = np.sqrt(C + xc**2 + yc**2 + zc**2)
+    circ = np.array((xc,yc,zc))
+    xc,yc,zc = path_from_local_to_global_coordinates(local_origin,local_axes,circ)
+
+    return xc, yc, zc, r
 
 
 def create_sphere(center, radius, color, opacity=1):
@@ -1176,7 +1222,7 @@ def keypress_callback(obj, event):
                                 1,
                                 1)                                   
                 
-            elif key == '8':                                       
+            elif key == 'F':                                       
                 print('\nKEY ',key)
                 print('>>> DEMO')
                 cycles = 1
@@ -1211,7 +1257,7 @@ def keypress_callback(obj, event):
                     actor3_position = translate[1]
                     actor2_position = translate[2]
 
-            elif key == '9':                                       
+            elif key == 'S':                                       
                 print('\nKEY ',key)
                 print('>>> DEMO_FINAL')
                 cycles = 1
@@ -1635,18 +1681,34 @@ def keypress_callback(obj, event):
                                                  .05)
                 
                 sphere_list.append((center,radius))
-            
-            elif key == 'T':  
+
+            elif key == '7':       
+                print('\nKEY ',key)
+                print('>>> CREATE SPHERE MINIMUM SQUARE')
+
+                if check_cnc_position_list(cmm_position,3) == 0:
+                    print('>>> NOT ENOUGH ELEMENTS AVAILABLE')
+                else:
+                    sphere = create_sphere_min_sq(cmm_position)
+                    
+                    x,y,z,r = sphere
+                    create_sphere((x,y,z), r, (1,1,1), 0.2)
+
+            elif key == 'T' or key == 't':  
 
                 print('\nKEY ',key)
-                print('>>> TRILATERATION2')
+                print('>>> sphere_intersections_3')
 
-                center1, center2 = trilateration2(sphere_list[-3:])
+                if len(sphere_list) < 3:
+                    print('>>> NOT ENOUGH ELEMENTS AVAILABLE')
+                else:
 
-                create_sphere((center1[0],center1[1],center1[2]), 4, (1,1,1), 1)
-                create_sphere((center2[0],center2[1],center2[2]), 4, (1,1,1), 1)
+                    center1, center2 = sphere_intersections_3(sphere_list[-3:])
 
-            elif key == '7':
+                    create_sphere((center1[0],center1[1],center1[2]), 4, (1,1,1), 1)
+                    create_sphere((center2[0],center2[1],center2[2]), 4, (1,1,1), 1)
+
+            elif key == 'A':
                 calculate_angle_between_vectors(create_vector(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-3]),
                                                 path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-4]),
                                                 1),
@@ -1676,14 +1738,7 @@ def keypress_callback(obj, event):
                         print(f'{ki}: {k}')
                         ki+=1
                             
-            #elif key == '5':           ## CREATE CENTER SPHERE
-            #    print('\nKEY ',key)
-            #    print('>>> CREATE CENTER SPHERE')
-            #    
-            #    renderer.AddActor(create_sphere(actor5_position,
-            #                                    25,
-            #                                    (0.92,0.91,0.86)))
-
+                            
             elif key == 'V':
                 print('\nKEY ',key)
                 print('STATE TOGGLE SHOW LOCAL VOLUMETRIC LIMITS')
