@@ -21,7 +21,6 @@
 \begin{document}
 \maketitle
 
-
 \section{Introdução}
 
 Este documento mostra os atalhos de teclado para controle da máquina, executar funções vetoriais e funções extras dentro do software Navigator.
@@ -35,7 +34,7 @@ Este documento mostra os atalhos de teclado para controle da máquina, executar 
 \begin{center}
 \begin{tabular}{ | m{2 cm} | m{3cm} |} 
   \hline
-  \centering \textbf{Comando}& \textbf{Descrição} \\ 
+  \centering \textbf{Comando}& \centering \textbf{Descrição} \\ 
   \hline
   \centering ↑ &  Movimento em +Y \\ 
   \hline
@@ -60,19 +59,21 @@ Este documento mostra os atalhos de teclado para controle da máquina, executar 
 \begin{center}
 \begin{tabular}{ | m{2 cm} | m{2cm}| m{4cm} | m{2.5cm}  |} 
   \hline
-  \centering \textbf{Comando}& \textbf{Elemento} & \textbf{Descrição} & \textbf{Dependências}\\ 
+  \centering \textbf{Comando}& \centering \textbf{Elemento} & \centering \textbf{Descrição} & \textbf{Dependências}\\ 
   \hline
   \centering 1 & \centering Ponto & Cria elemento esfera de raio 1, nas cores (0,0,191) & --//--\\ 
   \hline
-  \centering 2 & \centering Linha & Cria elemento Linha utilizando os dois últimos pontos registrados & Dois Pontos\\ 
+  \centering 2 & \centering Linha & Cria elemento Linha utilizando os dois últimos pontos registrados & Dois pontos\\ 
   \hline
-  \centering 3 & \centering Plano & Cria elemento Plano utilizando os três últimos pontos registrados & Três Pontos\\ 
+  \centering 3 & \centering Plano & Cria elemento Plano utilizando os três últimos pontos registrados & Três pontos\\ 
   \hline
   \centering 4 & \centering Plano (MMQ) & Cria elemento plano utilizando todos os pontos já registrados & Ao menos 3 pontos \\ 
   \hline
   \centering 5 & \centering Círculo & Cria elemento Círculo utilizando os três últimos pontos registrados e executa o caminho calculado em modo CNC & Três pontos \\ 
   \hline
-  \centering 6 & \centering Ângulo entre vetores & Calcula o ângulo interno e externo para duas linhas coplanares & Duas Linhas \\ 
+  \centering 6 & \centering Esfera & Cria uma esfera de raio 150 mm na posição atual & --//-- \\ 
+  \hline
+  \centering 7 & \centering Esfera (MMQ) & Cria elemento esfera utilizando todos os pontos já registrados & Ao menos 4 pontos \\ 
   \hline
 \end{tabular}
 \end{center}
@@ -86,30 +87,26 @@ Utilize os atalhos do teclado abaixo para exibir/ocultar elementos gráficos e e
 \begin{center}
 \begin{tabular}{ | m{4.5em} | m{4cm} | m{6cm} |} 
   \hline
-  \centering \textbf{Comando}& \textbf{Função} & \textbf{Descrição} \\ 
+  \centering \textbf{Comando}& \centering \textbf{Função} & \textbf{Descrição} \\ 
   \hline
   
-  \centering H & \centering Homing & Executa em modo CNC o Homing da máquina, terminando na posição (5,5,5) \\ 
+  \centering 0 & \centering Debug & Exibe no terminal as coordenadas locais e globais atuais, assim como as coordenadas de todos os pontos registrados \\ 
   \hline
-  \centering O & \centering Centro & Executa em modo CNC a posição central do cubo volumétrico da máquina \\ 
+  \centering H & \centering Go Home & Executa em modo CNC o Homing da máquina, terminando na posição (5,5,5) \\ 
   \hline
-  \centering 8 & \centering [Demo] Warm-up & Executa em modo CNC 1 ciclo de posições geométricas do Warm-up de Máquinas Zeiss \\ 
+  \centering O & \centering Go Center & Executa em modo CNC a posição central do cubo volumétrico da máquina \\ 
   \hline
-  \centering 9 & \centering [Demo] Elementos Geométricos I & Executa cinemática de Elementos Geométricos de Ponto, Linha, Plano e Círculo \\
+  \centering F & \centering [Demo] Warm-up & Executa em modo CNC 1 ciclo de posições geométricas do Warm-up de Máquinas Zeiss \\ 
   \hline
-  \centering 0 & \centering Debug Pontos e Posição & Exibe na janela do terminal a posição global e local da máquina e a lista de coordenadas locais e globais dos pontos registrados\\ 
+  \centering S & \centering [Demo] Elementos Geométricos I & Executa cinemática de Elementos Geométricos de Ponto, Linha, Plano e Círculo \\
   \hline
   \centering V & \centering Volume de medição & Exibe ou oculta o cubo volumétrico dos limites de movimento da máquina \\   \hline
-  \centering D & \centering Comando em cadeia de Texto & "RECALL": Executa a posição de todos os pontos registrados \\ 
+  \centering D & \centering Comando em cadeia de Texto & "RECALL": Executa a posição de todos os pontos registrados \\    \hline
+  \centering A & \centering Ângulo entre vetores & Calcula o ângulo interno e externo para duas linhas coplanares \\    \hline
+  \centering T & \centering [Demo] Intersecção entre três esferas & Dadas três esferas registradas com a tecla '6', exibe (se houver) as intersecções entre as três últimas esferas registradas \\ 
   
   \hline
 \end{tabular}
 \end{center}
-
-
-
-
-
-
 
 \end{document}
