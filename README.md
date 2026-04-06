@@ -39,11 +39,11 @@ Atenção! O projeto foi desenvolvido em um computador com as seguintes especifi
 - MoBo MSI A620M-E
 - Win 11 Pro v10.0.22631 Comp 22631
 
-## 🚀 Instalando Navigator
+## 💻 Instalando Navigator
 
 Para instalar o Navigator, siga estas etapas:
 
-- Baixe os 4 arquivos em formato .STL
+- Baixe os 5 arquivos em formato .STL
 - Baixe o arquivo Navigator.py e deixe-o no mesmo diretório dos arquivos .STL
 - Execute o código!
 
@@ -60,3 +60,4 @@ Consulte o arquivo "manual navigator.sty" para visualizar todos os comandos disp
 #### Referências:
 - Engrenagem "SPUR D12 Z2 17 AP20" obtida de: https://khkgears2.net/catalog2/SS2-17
 - Modelo .skp da Zeiss Prismo Navigator: [https://3dwarehouse-classic.sketchup.com/model/121100ae-13aa-4d65-8948-68686ba049c9/CMM-Carl-Zeiss-Prismo-Navigator](https://3dwarehouse.sketchup.com/model/121100ae-13aa-4d65-8948-68686ba049c9/CMM-Carl-Zeiss-Prismo-Navigator)
+- Modelo .STL do Leica AT960: [https://grabcad.com/library/leica-at960-laser-tracker-1](https://grabcad.com/library/leica-at960-laser-tracker-1)
