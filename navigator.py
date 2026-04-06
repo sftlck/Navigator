@@ -14,7 +14,7 @@ move_step =                     10
 speed =                         640
 e_sftlck_state =                False
 scale =                         0.75
-override_pos_limits_flag =      0
+override_pos_limits_flag =      1
 user_axis_control =             True
 i =                             0
 c =                             100
@@ -51,13 +51,25 @@ actor2_position = [actor4_position[0]   -   150,        ## capa do z    #### POS
                    actor4_position[1]   +   360,
                    actor4_position[2]   +   180]
 
-actor5_position = [1000,                                ## esfera
-                   1000, 
-                   actor3_position[2]   +   210]
+#actor5_position = [1000,                                ## esfera
+#                   1000, 
+#                   actor3_position[2]   +   210]
 
-actor6_position = [0,                                   ## engrenagem
+actor5_position = [0,                                ## esfera
                    0, 
-                   0]
+                   actor3_position[2]   +   310]
+
+actor6_position = [750,                                   ## engrenagem
+                   -600, 
+                   actor3_position[2]   +   310]
+
+actor7_position = [750,                                   ## engrenagem
+                   2000, 
+                   actor3_position[2]   +   310]
+
+actor8_position = [350,                                   ## engrenagem
+                   2000, 
+                   actor3_position[2]   +   310]
 
 local_safe_limits = [local_volumetric_limits[0]     +   5      ,   ## deslocamento automático após e_sftlck_state False em check_local_volumetric_limits
                      local_volumetric_limits[1]     -   5      ,
@@ -259,6 +271,118 @@ else:
         print('>>> START POS NOT OK',actor4_position)
     if check_local_volumetric_limits(local_axes,local_origin) == None: 
         print('>>> START POS OK')
+        
+import numpy as np
+
+def calculate_tracker_5(actor4position, tracker_pos):
+    """Calculate position data for Tracker 5"""
+    dx = actor4position[0] - tracker_pos[0]
+    dy = actor4position[1] - tracker_pos[1]
+    dz = actor4position[2] - tracker_pos[2]
+    
+    azimuth_deg = np.degrees(-np.arctan2(dx, dy))
+    
+    dist_horizontal = np.sqrt(dx**2 + dy**2)
+    zenith_rad = np.arctan2(dz, dist_horizontal)
+    zenith_deg = np.degrees(zenith_rad)
+    
+    print(f' >>> TRACKER 5')
+    print('> Delta X, Y, Z:', dx, dy, dz)
+    print('> AZIMUTH:', azimuth_deg)
+    print('> ZENITH:', zenith_deg, '\n')
+    
+    return dx, dy, dz, azimuth_deg, zenith_deg
+
+def calculate_tracker_6(actor4position, tracker_pos):
+    """Calculate position data for Tracker 6"""
+    dx = actor4position[0] - tracker_pos[0]
+    dy = actor4position[1] - tracker_pos[1]
+    dz = actor4position[2] - tracker_pos[2]
+    
+    azimuth_deg = np.degrees(-np.arctan2(dx, dy))
+    
+    dist_horizontal = np.sqrt(dx**2 + dy**2)
+    zenith_rad = np.arctan2(dz, dist_horizontal)
+    zenith_deg = np.degrees(zenith_rad)
+    
+    print(f' >>> TRACKER 6')
+    print('> Delta X, Y, Z:', dx, dy, dz)
+    print('> AZIMUTH:', azimuth_deg)
+    print('> ZENITH:', zenith_deg, '\n')
+    
+    return dx, dy, dz, azimuth_deg, zenith_deg
+
+def calculate_tracker_7(actor4position, tracker_pos):
+    """Calculate position data for Tracker 7"""
+    dx = actor4position[0] - tracker_pos[0]
+    dy = actor4position[1] - tracker_pos[1]
+    dz = actor4position[2] - tracker_pos[2]
+    
+    azimuth_deg = np.degrees(-np.arctan2(dx, dy))
+    
+    dist_horizontal = np.sqrt(dx**2 + dy**2)
+    zenith_rad = np.arctan2(dz, dist_horizontal)
+    zenith_deg = np.degrees(zenith_rad)
+    
+    print(f' >>> TRACKER 7')
+    print('> Delta X, Y, Z:', dx, dy, dz)
+    print('> AZIMUTH:', azimuth_deg)
+    print('> ZENITH:', zenith_deg, '\n')
+    
+    return dx, dy, dz, azimuth_deg, zenith_deg
+
+def calculate_tracker_8(actor4position, tracker_pos):
+    """Calculate position data for Tracker 8"""
+    dx = actor4position[0] - tracker_pos[0]
+    dy = actor4position[1] - tracker_pos[1]
+    dz = actor4position[2] - tracker_pos[2]
+    
+    azimuth_deg = np.degrees(-np.arctan2(dx, dy))
+    
+    dist_horizontal = np.sqrt(dx**2 + dy**2)
+    zenith_rad = np.arctan2(dz, dist_horizontal)
+    zenith_deg = np.degrees(zenith_rad)
+    
+    print(f' >>> TRACKER 8')
+    print('> Delta X, Y, Z:', dx, dy, dz)
+    print('> AZIMUTH:', azimuth_deg)
+    print('> ZENITH:', zenith_deg, '\n')
+    
+    return dx, dy, dz, azimuth_deg, zenith_deg
+
+def update_tracker_position2(tracker_list, actor4position, actors_vtk, line_source1,line_source2,line_source3,line_source4):
+    
+    # Tracker 5 (index 0)
+    if len(tracker_list) > 0:
+        result_5 = calculate_tracker_5(actor4position, tracker_list[0])
+        if len(actors_vtk) > 0:
+            actors_vtk[0].SetOrientation(result_5[4], 0, result_5[3])
+            line_source1.SetPoint1(tracker_list[0])
+            line_source1.SetPoint2(actor4position)
+    
+    # Tracker 6 (index 1)
+    if len(tracker_list) > 1:
+        result_6 = calculate_tracker_6(actor4position, tracker_list[1])
+        if len(actors_vtk) > 1:
+            actors_vtk[1].SetOrientation(result_6[4], 0, result_6[3])
+            line_source2.SetPoint1(tracker_list[1])
+            line_source2.SetPoint2(actor4position)
+    
+    # Tracker 7 (index 2)
+    if len(tracker_list) > 2:
+        result_7 = calculate_tracker_7(actor4position, tracker_list[2])
+        if len(actors_vtk) > 2:
+            actors_vtk[2].SetOrientation(result_7[4], 0, result_7[3])
+            line_source3.SetPoint1(tracker_list[2])
+            line_source3.SetPoint2(actor4position)
+    
+    # Tracker 8 (index 3)
+    if len(tracker_list) > 3:
+        result_8 = calculate_tracker_8(actor4position, tracker_list[3])
+        if len(actors_vtk) > 3:
+            actors_vtk[3].SetOrientation(result_8[4], 0, result_8[3])
+            line_source4.SetPoint1(tracker_list[3])
+            line_source4.SetPoint2(actor4position)
 
 def create_coordinate_window():
 
@@ -912,6 +1036,28 @@ def create_sphere_min_sq(points):
 
     return xc, yc, zc, r
 
+def create_sphere2(center, radius, color, opacity=1):
+    sphereSource = vtk.vtkSphereSource()
+    sphereSource.SetCenter(center)
+    sphereSource.SetRadius(radius)
+    sphereSource.SetPhiResolution(100)
+    sphereSource.SetThetaResolution(100)
+    mapper = vtk.vtkPolyDataMapper()
+    mapper.SetInputConnection(sphereSource.GetOutputPort())
+    sphere_actor = vtk.vtkActor()
+    sphere_actor.SetMapper(mapper)
+    sphere_actor.GetProperty().SetColor(*color)
+    sphere_actor.GetProperty().SetOpacity(opacity)
+    sphere_actor.GetProperty().SetEdgeVisibility(False)
+    renderer.AddActor(sphere_actor)
+    renderWindow.Render()
+
+    if opacity != 1:
+        print('> CENTER:',center)
+        print('> RADIUS:',radius)
+
+    return sphere_actor, center, radius
+
 
 def create_sphere(center, radius, color, opacity=1):
     sphereSource = vtk.vtkSphereSource()
@@ -933,7 +1079,7 @@ def create_sphere(center, radius, color, opacity=1):
         print('> CENTER:',center)
         print('> RADIUS:',radius)
 
-    return sphere_actor, center, radius
+    return sphere_actor
 
 def create_volume_box_actor(limits, color):
     x_min, x_max, y_min, y_max, z_min, z_max = limits
@@ -999,6 +1145,7 @@ def translate_in_volume(actor4_position,actor3_position,actor2_position,x,y,z,ca
         if check_local_volumetric_limits(local_axes,local_origin)== 1 or cnc_mode_state == False:
             occurence = 1
             break
+        
         if camera_demo == True:
             camera.SetFocalPoint(*actor4_position)
             if CAMERA_POS != None:
@@ -1015,6 +1162,11 @@ def translate_in_volume(actor4_position,actor3_position,actor2_position,x,y,z,ca
         actor4_position = sync_actors_movement(actor4_position,actor3_position,actor2_position,pos)[0]
         actor3_position = sync_actors_movement(actor4_position,actor3_position,actor2_position,pos)[1]
         actor2_position = sync_actors_movement(actor4_position,actor3_position,actor2_position,pos)[2]
+        
+        actors_list = [actor5, actor6, actor7, actor8]
+        actors_list_positions = [actor5_position, actor6_position, actor7_position, actor8_position]
+        update_tracker_position2(actors_list_positions,actor4_position,actors_list, line_source1,line_source2,line_source3,line_source4)
+
         renderWindow.Render()
         t.sleep(sleep)
     
@@ -1042,7 +1194,9 @@ def create_3dline(p0, p1):
     return actor, lineoutput
 
 def keypress_callback(obj, event):
-        global actor2_position, actor3_position, actor4_position, actor5_position, local_volumetric_limits, global_volumetric_limits,camera
+        global actor2_position, actor3_position, actor4_position, actor5_position, actor6_position, actor7_position, actor8_position, line_source1,line_source2,line_source3,line_source4
+        
+        global local_volumetric_limits, global_volumetric_limits,camera
         #print(user_axis_control)
         if user_axis_control_check() == False:
             print('USER AXIS CONTROL', user_axis_control)
@@ -1221,8 +1375,16 @@ def keypress_callback(obj, event):
                                 path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-3]),
                                 1,
                                 1)                                   
-                
-            elif key == 'F':                                       
+            
+            elif key == 'U' or key =='u':                                       
+                print('\nKEY ',key)
+                print('>>> UPDATE TRACKER POSITION')
+
+                actors_list = [actor5, actor6, actor7, actor8]
+                actors_list_positions = [actor5_position, actor6_position, actor7_position, actor8_position]
+                update_tracker_position2(actors_list_positions,actor4_position,actors_list, line_source1,line_source2,line_source3,line_source4)
+
+            elif key == 'F'or key == 'f':                                       
                 print('\nKEY ',key)
                 print('>>> DEMO')
                 cycles = 1
@@ -1673,7 +1835,7 @@ def keypress_callback(obj, event):
                 print('\nKEY ',key)
                 print('>>> CREATE SPHERE')
                 
-                sphere_actor , center, radius = create_sphere((actor4_position[0],
+                sphere_actor , center, radius = create_sphere2((actor4_position[0],
                                                  actor4_position[1],
                                                  actor4_position[2]),
                                                  150,
@@ -1759,11 +1921,12 @@ def keypress_callback(obj, event):
             actor2.SetPosition(*actor2_position)
             actor3.SetPosition(*actor3_position)
             actor4.SetPosition(*actor4_position)
-            #actor5.SetPosition(*actor5_position)
+            actor5.SetPosition(*actor5_position)
             renderWindow.Render()
 
 def main():
-    global actor2, actor3, actor4, actor5, renderWindow, renderer,camera
+    global actor2, actor3, actor4, actor5, actor6, actor7,actor8, line_source1,line_source2,line_source3,line_source4
+    global renderWindow, renderer,camera
 
     reader1 = vtk.vtkSTLReader()
     reader1.SetFileName(r'navigatorbase3.stl')
@@ -1814,28 +1977,113 @@ def main():
     actor4.SetPosition(*actor4_position)
 
     reader5 = vtk.vtkSTLReader()
-    
-    reader5.SetFileName(r'navigator-y.stl')
+    reader5.SetFileName(r'Leica AT960-r.stl')
     reader5.Update()
-    
     mapper5 = vtk.vtkPolyDataMapper()
     mapper5.SetInputConnection(reader5.GetOutputPort())
-
     actor5 = vtk.vtkActor()
     actor5.SetMapper(mapper5)
     actor5.SetPosition(*actor5_position)
-        
-    #reader6 = vtk.vtkSTLReader()
 
-    #reader6.SetFileName(r'SPUR D12 17 AP20 Z2.stl')
-    #reader6.Update()
+    reader6 = vtk.vtkSTLReader()
+    reader6.SetFileName(r'Leica AT960-r.stl')
+    reader6.Update()
+    mapper6 = vtk.vtkPolyDataMapper()
+    mapper6.SetInputConnection(reader6.GetOutputPort())
+    actor6 = vtk.vtkActor()
+    actor6.SetMapper(mapper6)
+    actor6.SetPosition(*actor6_position)
 
-    #mapper6 = vtk.vtkPolyDataMapper()
-    #mapper6.SetInputConnection(reader6.GetOutputPort())
+       
+    dx = actor4_position[0] - actor6_position[0]
+    dy = actor4_position[1] - actor6_position[1]
+    dz = actor4_position[2] - actor6_position[2]
+    azimuth_deg = np.degrees(-np.arctan2(dx, dy))
+    dist_horizontal = np.sqrt(dx**2 + dy**2)
+    zenith_rad = np.arctan2(dz, dist_horizontal)
+    zenith_deg = np.degrees(zenith_rad)
+    print(f' >>> TRACKER {i + 5}')
+    print('> Delta X, Y, Z:', dx,dy,dz)
+    print('> AZIMUTH:', azimuth_deg)
+    print('> ZENITH:', zenith_deg,'\n')
+    actor6.SetOrientation(zenith_deg, 0, azimuth_deg)
 
-    #actor6 = vtk.vtkActor()
-    #actor6.SetMapper(mapper6)
-    #actor6.SetPosition(*actor6_position)
+    reader7 = vtk.vtkSTLReader()
+    reader7.SetFileName(r'Leica AT960-r.stl')
+    reader7.Update()
+    mapper7 = vtk.vtkPolyDataMapper()
+    mapper7.SetInputConnection(reader7.GetOutputPort())
+    actor7 = vtk.vtkActor()
+    actor7.SetMapper(mapper7)
+    actor7.SetPosition(*actor7_position)
+    
+    dx = actor4_position[0] - actor7_position[0]
+    dy = actor4_position[1] - actor7_position[1]
+    dz = actor4_position[2] - actor7_position[2]
+    azimuth_deg = np.degrees(-np.arctan2(dx, dy))
+    dist_horizontal = np.sqrt(dx**2 + dy**2)
+    zenith_rad = np.arctan2(dz, dist_horizontal)
+    zenith_deg = np.degrees(zenith_rad)
+    print(f' >>> TRACKER {i + 5}')
+    print('> Delta X, Y, Z:', dx,dy,dz)
+    print('> AZIMUTH:', azimuth_deg)
+    print('> ZENITH:', zenith_deg,'\n')
+    actor7.SetOrientation(zenith_deg, 0, azimuth_deg)
+
+
+    reader8 = vtk.vtkSTLReader()
+    reader8.SetFileName(r'Leica AT960-r.stl')
+    reader8.Update()
+    mapper8 = vtk.vtkPolyDataMapper()
+    mapper8.SetInputConnection(reader8.GetOutputPort())
+    actor8 = vtk.vtkActor()
+    actor8.SetMapper(mapper8)
+    actor8.SetPosition(*actor8_position)
+
+    dx = actor4_position[0] - actor8_position[0]
+    dy = actor4_position[1] - actor8_position[1]
+    dz = actor4_position[2] - actor8_position[2]
+    azimuth_deg = np.degrees(-np.arctan2(dx, dy))
+    dist_horizontal = np.sqrt(dx**2 + dy**2)
+    zenith_rad = np.arctan2(dz, dist_horizontal)
+    zenith_deg = np.degrees(zenith_rad)
+    print(f' >>> TRACKER {i + 5}')
+    print('> Delta X, Y, Z:', dx,dy,dz)
+    print('> AZIMUTH:', azimuth_deg)
+    print('> ZENITH:', zenith_deg,'\n')
+    actor8.SetOrientation(zenith_deg, 0, azimuth_deg)
+
+    line_source1 = vtk.vtkLineSource()
+    line_mapper1 = vtk.vtkPolyDataMapper()
+    line_mapper1.SetInputConnection(line_source1.GetOutputPort())
+    line_actor1 = vtk.vtkActor()
+    line_actor1.SetMapper(line_mapper1)
+    line_actor1.GetProperty().SetColor(1, 0, 0) 
+    line_actor1.GetProperty().SetLineWidth(1)
+
+    line_source2 = vtk.vtkLineSource()
+    line_mapper2 = vtk.vtkPolyDataMapper()
+    line_mapper2.SetInputConnection(line_source2.GetOutputPort())
+    line_actor2 = vtk.vtkActor()
+    line_actor2.SetMapper(line_mapper2)
+    line_actor2.GetProperty().SetColor(1, 0, 0) 
+    line_actor2.GetProperty().SetLineWidth(1)
+    
+    line_source3 = vtk.vtkLineSource()
+    line_mapper3 = vtk.vtkPolyDataMapper()
+    line_mapper3.SetInputConnection(line_source3.GetOutputPort())
+    line_actor3 = vtk.vtkActor()
+    line_actor3.SetMapper(line_mapper3)
+    line_actor3.GetProperty().SetColor(1, 0, 0) 
+    line_actor3.GetProperty().SetLineWidth(1)
+
+    line_source4 = vtk.vtkLineSource()
+    line_mapper4 = vtk.vtkPolyDataMapper()
+    line_mapper4.SetInputConnection(line_source4.GetOutputPort())
+    line_actor4 = vtk.vtkActor()
+    line_actor4.SetMapper(line_mapper4)
+    line_actor4.GetProperty().SetColor(1, 0, 0) 
+    line_actor4.GetProperty().SetLineWidth(1)
 
     renderer = vtk.vtkRenderer()
     renderWindow = vtk.vtkRenderWindow()
@@ -1854,8 +2102,16 @@ def main():
     renderer.AddActor(actor2)
     renderer.AddActor(actor3)
     renderer.AddActor(actor4)
-    #renderer.AddActor(actor5)
-    #renderer.AddActor(actor6)
+    renderer.AddActor(actor4)
+    renderer.AddActor(actor5)
+    renderer.AddActor(actor6)
+    renderer.AddActor(actor7)
+    renderer.AddActor(actor8)
+
+    renderer.AddActor(line_actor1)
+    renderer.AddActor(line_actor2)
+    renderer.AddActor(line_actor3)
+    renderer.AddActor(line_actor4)
       
     colors = vtk.vtkNamedColors()
 
@@ -1871,18 +2127,25 @@ def main():
     actor1.RotateZ(90)
     actor4.SetScale(scale,scale,scale)
     actor5.SetScale(1000,1000,1000)
+    actor6.SetScale(1000,1000,1000)
+    actor7.SetScale(1000,1000,1000)
+    actor8.SetScale(1000,1000,1000)
     actor2.SetScale(scale,scale,scale)
+    #actor5.RotateZ(90)
+    #actor5.RotateX(90)
+    #actor5.RotateY(90)
     actor2.RotateZ(90)
-    actor5.RotateZ(135)
+
+    #actor5.RotateZ(135)
 
     axes = vtk.vtkAxesActor()
-    axes.SetTotalLength(scale*100,scale*100,scale*100) # tamanho dos eixos
+    axes.SetTotalLength(scale*100,scale*100,scale*100) 
     axes.SetShaftTypeToCylinder()
     axes.SetCylinderRadius(0.02)
-    axes.GetXAxisCaptionActor2D().GetTextActor().GetTextProperty().SetColor(1, 0, 0)  # X vermelho
-    axes.GetYAxisCaptionActor2D().GetTextActor().GetTextProperty().SetColor(0, 1, 0)  # Y verde
-    axes.GetZAxisCaptionActor2D().GetTextActor().GetTextProperty().SetColor(0, 0, 1)  # Z azul
-    axes.SetPosition(0, 0, 0)  # origem
+    axes.GetXAxisCaptionActor2D().GetTextActor().GetTextProperty().SetColor(1, 0, 0)  
+    axes.GetYAxisCaptionActor2D().GetTextActor().GetTextProperty().SetColor(0, 1, 0)  
+    axes.GetZAxisCaptionActor2D().GetTextActor().GetTextProperty().SetColor(0, 0, 1)  
+    axes.SetPosition(0, 0, 0)  
 
     #renderer.AddActor(axes)
 
