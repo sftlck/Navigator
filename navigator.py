@@ -14,7 +14,7 @@ move_step =                     10
 speed =                         640
 e_sftlck_state =                False
 scale =                         0.75
-override_pos_limits_flag =      1
+override_pos_limits_flag =      0
 user_axis_control =             True
 i =                             0
 c =                             100
@@ -272,10 +272,7 @@ else:
     if check_local_volumetric_limits(local_axes,local_origin) == None: 
         print('>>> START POS OK')
         
-import numpy as np
-
 def calculate_tracker_5(actor4position, tracker_pos):
-    """Calculate position data for Tracker 5"""
     dx = actor4position[0] - tracker_pos[0]
     dy = actor4position[1] - tracker_pos[1]
     dz = actor4position[2] - tracker_pos[2]
@@ -294,7 +291,6 @@ def calculate_tracker_5(actor4position, tracker_pos):
     return dx, dy, dz, azimuth_deg, zenith_deg
 
 def calculate_tracker_6(actor4position, tracker_pos):
-    """Calculate position data for Tracker 6"""
     dx = actor4position[0] - tracker_pos[0]
     dy = actor4position[1] - tracker_pos[1]
     dz = actor4position[2] - tracker_pos[2]
@@ -313,7 +309,6 @@ def calculate_tracker_6(actor4position, tracker_pos):
     return dx, dy, dz, azimuth_deg, zenith_deg
 
 def calculate_tracker_7(actor4position, tracker_pos):
-    """Calculate position data for Tracker 7"""
     dx = actor4position[0] - tracker_pos[0]
     dy = actor4position[1] - tracker_pos[1]
     dz = actor4position[2] - tracker_pos[2]
@@ -332,7 +327,6 @@ def calculate_tracker_7(actor4position, tracker_pos):
     return dx, dy, dz, azimuth_deg, zenith_deg
 
 def calculate_tracker_8(actor4position, tracker_pos):
-    """Calculate position data for Tracker 8"""
     dx = actor4position[0] - tracker_pos[0]
     dy = actor4position[1] - tracker_pos[1]
     dz = actor4position[2] - tracker_pos[2]
@@ -352,35 +346,35 @@ def calculate_tracker_8(actor4position, tracker_pos):
 
 def update_tracker_position2(tracker_list, actor4position, actors_vtk, line_source1,line_source2,line_source3,line_source4):
     
-    # Tracker 5 (index 0)
     if len(tracker_list) > 0:
         result_5 = calculate_tracker_5(actor4position, tracker_list[0])
         if len(actors_vtk) > 0:
             actors_vtk[0].SetOrientation(result_5[4], 0, result_5[3])
+            actors_vtk[4].SetOrientation(0, 0, result_5[3])
             line_source1.SetPoint1(tracker_list[0])
             line_source1.SetPoint2(actor4position)
-    
-    # Tracker 6 (index 1)
+
     if len(tracker_list) > 1:
         result_6 = calculate_tracker_6(actor4position, tracker_list[1])
         if len(actors_vtk) > 1:
             actors_vtk[1].SetOrientation(result_6[4], 0, result_6[3])
+            actors_vtk[5].SetOrientation(0, 0, result_6[3])
             line_source2.SetPoint1(tracker_list[1])
             line_source2.SetPoint2(actor4position)
     
-    # Tracker 7 (index 2)
     if len(tracker_list) > 2:
         result_7 = calculate_tracker_7(actor4position, tracker_list[2])
         if len(actors_vtk) > 2:
             actors_vtk[2].SetOrientation(result_7[4], 0, result_7[3])
+            actors_vtk[6].SetOrientation(0, 0, result_7[3])
             line_source3.SetPoint1(tracker_list[2])
             line_source3.SetPoint2(actor4position)
     
-    # Tracker 8 (index 3)
     if len(tracker_list) > 3:
         result_8 = calculate_tracker_8(actor4position, tracker_list[3])
         if len(actors_vtk) > 3:
             actors_vtk[3].SetOrientation(result_8[4], 0, result_8[3])
+            actors_vtk[7].SetOrientation(0, 0, result_8[3])
             line_source4.SetPoint1(tracker_list[3])
             line_source4.SetPoint2(actor4position)
 
@@ -1163,10 +1157,10 @@ def translate_in_volume(actor4_position,actor3_position,actor2_position,x,y,z,ca
         actor3_position = sync_actors_movement(actor4_position,actor3_position,actor2_position,pos)[1]
         actor2_position = sync_actors_movement(actor4_position,actor3_position,actor2_position,pos)[2]
         
-        actors_list = [actor5, actor6, actor7, actor8]
+        actors_list = [actor5, actor6, actor7, actor8, actor5_1, actor6_1, actor7_1, actor8_1]
         actors_list_positions = [actor5_position, actor6_position, actor7_position, actor8_position]
-        update_tracker_position2(actors_list_positions,actor4_position,actors_list, line_source1,line_source2,line_source3,line_source4)
 
+        update_tracker_position2(actors_list_positions, actor4_position, actors_list, line_source1,line_source2,line_source3,line_source4)
         renderWindow.Render()
         t.sleep(sleep)
     
@@ -1197,6 +1191,9 @@ def keypress_callback(obj, event):
         global actor2_position, actor3_position, actor4_position, actor5_position, actor6_position, actor7_position, actor8_position, line_source1,line_source2,line_source3,line_source4
         
         global local_volumetric_limits, global_volumetric_limits,camera
+        
+        actors_list = [actor5, actor6, actor7, actor8, actor5_1, actor6_1, actor7_1, actor8_1]
+        actors_list_positions = [actor5_position, actor6_position, actor7_position, actor8_position]
         #print(user_axis_control)
         if user_axis_control_check() == False:
             print('USER AXIS CONTROL', user_axis_control)
@@ -1216,7 +1213,7 @@ def keypress_callback(obj, event):
                     actor4_position[0] -= move_step                         ## avanço
                     actor2_position[0] -= move_step
                     print('KEY LEFT global_actor4_position ', actor4_position, '/ local_current_position ', get_local_current_position(local_axes,local_origin,actor4_position))
-
+                    
                 else:
                     if check_local_volumetric_limits(local_axes,local_origin) == None:     ## segue o baile
                         actor4_position[0] -= move_step                             ## avanço
@@ -1227,6 +1224,7 @@ def keypress_callback(obj, event):
                         check_global_volumetric_limits(actor4_position)
                         actor4_position[0] -= move_step                             ## avanço
                         actor2_position[0] -= move_step
+                    
                 
             elif key == 'Right':                                            ## MOVER +X
                 
@@ -1234,6 +1232,7 @@ def keypress_callback(obj, event):
                     actor4_position[0] += move_step                         ## avanço
                     actor2_position[0] += move_step
                     print('KEY RIGHT global_actor4_position ', actor4_position, '/ local_current_position ', get_local_current_position(local_axes,local_origin,actor4_position))
+                    
 
                 else:
                     if check_local_volumetric_limits(local_axes,local_origin) == None:
@@ -1245,6 +1244,7 @@ def keypress_callback(obj, event):
                         check_global_volumetric_limits(actor4_position)
                         actor4_position[0] += move_step
                         actor2_position[0] += move_step
+                    
 
             elif key == 'Up':                                               ## MOVER +Y
                 
@@ -1267,6 +1267,7 @@ def keypress_callback(obj, event):
                         actor4_position[1] += move_step
                         actor3_position[1] += move_step
                         actor2_position[1] += move_step
+                    
                         
             elif key == 'Down':                                             ## MOVER -Y
                 
@@ -1292,6 +1293,7 @@ def keypress_callback(obj, event):
                         #actor4_position[1] -= move_step                     ## reação ao avanço
                         #actor3_position[1] -= move_step                     ## reação ao avanço
                         #actor2_position[1] -= move_step                     ## reação ao avanço
+                    
 
             elif key == 'm' or key == 'M':                                                ## MOVER -Z
                 
@@ -1306,6 +1308,7 @@ def keypress_callback(obj, event):
                     if check_local_volumetric_limits(local_axes,local_origin) == 1:
                         check_global_volumetric_limits(actor4_position)
                         actor4_position[2] -= move_step
+                
 
             elif key == 'k' or key == 'K':                                                ## MOVER +Z
                                 
@@ -1320,6 +1323,7 @@ def keypress_callback(obj, event):
                     if check_local_volumetric_limits(local_axes,local_origin) == 1:
                         check_global_volumetric_limits(actor4_position)
                         actor4_position[2] += move_step           
+                
 
             elif key == '1':           ## REGISTER CMM POSITION
                 print('\nKEY ',key)
@@ -1382,7 +1386,6 @@ def keypress_callback(obj, event):
 
                 actors_list = [actor5, actor6, actor7, actor8]
                 actors_list_positions = [actor5_position, actor6_position, actor7_position, actor8_position]
-                update_tracker_position2(actors_list_positions,actor4_position,actors_list, line_source1,line_source2,line_source3,line_source4)
 
             elif key == 'F'or key == 'f':                                       
                 print('\nKEY ',key)
@@ -1419,7 +1422,7 @@ def keypress_callback(obj, event):
                     actor3_position = translate[1]
                     actor2_position = translate[2]
 
-            elif key == 'S':                                       
+            elif key == 'S' or key == 's' :                                       
                 print('\nKEY ',key)
                 print('>>> DEMO_FINAL')
                 cycles = 1
@@ -1694,7 +1697,7 @@ def keypress_callback(obj, event):
                     actor3_position = translate[1]
                     actor2_position = translate[2]
 
-            elif key == 'D':                                             ## INPUT COMMAND
+            elif key == 'D' or key == 'd':                                             ## INPUT COMMAND
                 print("key ",key)
                 command = input("> NAVIGATOR: ")
 
@@ -1759,7 +1762,7 @@ def keypress_callback(obj, event):
                     print(">>> UNKNOWN COMMAND")
                     print(">>> EXIT COMMAND INPUT MODE")
 
-            elif key == 'O':        ## GO TO CENTER VOLUMETRIC LIMITS
+            elif key == 'O' or key == 'o':        ## GO TO CENTER VOLUMETRIC LIMITS
                 print('\nKEY 0')
                 local_current_position = get_local_current_position(local_axes,local_origin,actor4_position)
                 translate = translate_in_volume(actor4_position,
@@ -1773,7 +1776,7 @@ def keypress_callback(obj, event):
                 actor3_position = translate[1]
                 actor2_position = translate[2]
                     
-            elif key == 'H':        ## HOMING FUNCTION
+            elif key == 'H' or key == 'h':        ## HOMING FUNCTION
                 print('\nKEY H')
                 local_current_position = get_local_current_position(local_axes,local_origin,actor4_position)
                 new_position = calculate_new_local_coordinates(local_current_position[0],local_current_position[1],0,actor4_position,local_origin,local_current_position)
@@ -1870,7 +1873,7 @@ def keypress_callback(obj, event):
                     create_sphere((center1[0],center1[1],center1[2]), 4, (1,1,1), 1)
                     create_sphere((center2[0],center2[1],center2[2]), 4, (1,1,1), 1)
 
-            elif key == 'A':
+            elif key == 'A' or key =='a':
                 calculate_angle_between_vectors(create_vector(path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-3]),
                                                 path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-4]),
                                                 1),
@@ -1901,7 +1904,7 @@ def keypress_callback(obj, event):
                         ki+=1
                             
                             
-            elif key == 'V':
+            elif key == 'V' or key == 'v':
                 print('\nKEY ',key)
                 print('STATE TOGGLE SHOW LOCAL VOLUMETRIC LIMITS')
                 global show_volume_bounds
@@ -1913,19 +1916,17 @@ def keypress_callback(obj, event):
                     renderer.RemoveActor(global_volume_actor)
                     renderer.RemoveActor(local_volume_actor)
                 renderWindow.Render()
-
-            elif key == 's':
-                print('\nKEY ',key)
-                print('>>> NO FUNCTION')
-
+                
             actor2.SetPosition(*actor2_position)
             actor3.SetPosition(*actor3_position)
             actor4.SetPosition(*actor4_position)
             actor5.SetPosition(*actor5_position)
+            
+            update_tracker_position2(actors_list_positions,actor4_position,actors_list, line_source1,line_source2,line_source3,line_source4)
             renderWindow.Render()
 
 def main():
-    global actor2, actor3, actor4, actor5, actor6, actor7,actor8, line_source1,line_source2,line_source3,line_source4
+    global actor2, actor3, actor4, actor5, actor6, actor7,actor8, actor5_1, actor6_1, actor7_1,actor8_1, line_source1,line_source2,line_source3,line_source4
     global renderWindow, renderer,camera
 
     reader1 = vtk.vtkSTLReader()
@@ -1977,16 +1978,25 @@ def main():
     actor4.SetPosition(*actor4_position)
 
     reader5 = vtk.vtkSTLReader()
-    reader5.SetFileName(r'Leica AT960-r.stl')
+    reader5.SetFileName(r'Leica AT960-interferometer.stl')
     reader5.Update()
     mapper5 = vtk.vtkPolyDataMapper()
     mapper5.SetInputConnection(reader5.GetOutputPort())
     actor5 = vtk.vtkActor()
     actor5.SetMapper(mapper5)
     actor5.SetPosition(*actor5_position)
+        
+    reader5_1 = vtk.vtkSTLReader()
+    reader5_1.SetFileName(r'Leica AT960-body.stl')
+    reader5_1.Update()
+    mapper5_1 = vtk.vtkPolyDataMapper()
+    mapper5_1.SetInputConnection(reader5_1.GetOutputPort())
+    actor5_1 = vtk.vtkActor()
+    actor5_1.SetMapper(mapper5_1)
+    actor5_1.SetPosition(*actor5_position)
 
     reader6 = vtk.vtkSTLReader()
-    reader6.SetFileName(r'Leica AT960-r.stl')
+    reader6.SetFileName(r'Leica AT960-interferometer.stl')
     reader6.Update()
     mapper6 = vtk.vtkPolyDataMapper()
     mapper6.SetInputConnection(reader6.GetOutputPort())
@@ -1994,6 +2004,14 @@ def main():
     actor6.SetMapper(mapper6)
     actor6.SetPosition(*actor6_position)
 
+    reader6_1 = vtk.vtkSTLReader()
+    reader6_1.SetFileName(r'Leica AT960-body.stl')
+    reader6_1.Update()
+    mapper6_1 = vtk.vtkPolyDataMapper()
+    mapper6_1.SetInputConnection(reader6_1.GetOutputPort())
+    actor6_1 = vtk.vtkActor()
+    actor6_1.SetMapper(mapper6_1)
+    actor6_1.SetPosition(*actor6_position)
        
     dx = actor4_position[0] - actor6_position[0]
     dy = actor4_position[1] - actor6_position[1]
@@ -2009,7 +2027,7 @@ def main():
     actor6.SetOrientation(zenith_deg, 0, azimuth_deg)
 
     reader7 = vtk.vtkSTLReader()
-    reader7.SetFileName(r'Leica AT960-r.stl')
+    reader7.SetFileName(r'Leica AT960-interferometer.stl')
     reader7.Update()
     mapper7 = vtk.vtkPolyDataMapper()
     mapper7.SetInputConnection(reader7.GetOutputPort())
@@ -2017,6 +2035,15 @@ def main():
     actor7.SetMapper(mapper7)
     actor7.SetPosition(*actor7_position)
     
+    reader7_1 = vtk.vtkSTLReader()
+    reader7_1.SetFileName(r'Leica AT960-body.stl')
+    reader7_1.Update()
+    mapper7_1 = vtk.vtkPolyDataMapper()
+    mapper7_1.SetInputConnection(reader7_1.GetOutputPort())
+    actor7_1 = vtk.vtkActor()
+    actor7_1.SetMapper(mapper7_1)
+    actor7_1.SetPosition(*actor7_position)
+
     dx = actor4_position[0] - actor7_position[0]
     dy = actor4_position[1] - actor7_position[1]
     dz = actor4_position[2] - actor7_position[2]
@@ -2032,13 +2059,22 @@ def main():
 
 
     reader8 = vtk.vtkSTLReader()
-    reader8.SetFileName(r'Leica AT960-r.stl')
+    reader8.SetFileName(r'Leica AT960-interferometer.stl')
     reader8.Update()
     mapper8 = vtk.vtkPolyDataMapper()
     mapper8.SetInputConnection(reader8.GetOutputPort())
     actor8 = vtk.vtkActor()
     actor8.SetMapper(mapper8)
     actor8.SetPosition(*actor8_position)
+
+    reader8_1 = vtk.vtkSTLReader()
+    reader8_1.SetFileName(r'Leica AT960-body.stl')
+    reader8_1.Update()
+    mapper8_1 = vtk.vtkPolyDataMapper()
+    mapper8_1.SetInputConnection(reader8_1.GetOutputPort())
+    actor8_1 = vtk.vtkActor()
+    actor8_1.SetMapper(mapper8_1)
+    actor8_1.SetPosition(*actor8_position)
 
     dx = actor4_position[0] - actor8_position[0]
     dy = actor4_position[1] - actor8_position[1]
@@ -2104,9 +2140,13 @@ def main():
     renderer.AddActor(actor4)
     renderer.AddActor(actor4)
     renderer.AddActor(actor5)
+    renderer.AddActor(actor5_1)
     renderer.AddActor(actor6)
+    renderer.AddActor(actor6_1)
     renderer.AddActor(actor7)
+    renderer.AddActor(actor7_1)
     renderer.AddActor(actor8)
+    renderer.AddActor(actor8_1)
 
     renderer.AddActor(line_actor1)
     renderer.AddActor(line_actor2)
@@ -2130,6 +2170,10 @@ def main():
     actor6.SetScale(1000,1000,1000)
     actor7.SetScale(1000,1000,1000)
     actor8.SetScale(1000,1000,1000)
+    actor5_1.SetScale(1000,1000,1000)
+    actor6_1.SetScale(1000,1000,1000)
+    actor7_1.SetScale(1000,1000,1000)
+    actor8_1.SetScale(1000,1000,1000)
     actor2.SetScale(scale,scale,scale)
     #actor5.RotateZ(90)
     #actor5.RotateX(90)
