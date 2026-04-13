@@ -22,7 +22,7 @@ cnc_mode_state =                False
 show_volume_bounds =            True
 cmm_position =                  [] 
 sphere_list =                   []
-add_arm_bool =                  True
+add_arm_bool =                  False
 add_trackers_bool =             False
 
 global_volumetric_limits = [230,      # -X
@@ -1202,6 +1202,10 @@ def keypress_callback(obj, event):
         
         actors_list = [actor5, actor6, actor7, actor8, actor5_1, actor6_1, actor7_1, actor8_1]
         actors_list_positions = [actor5_position, actor6_position, actor7_position, actor8_position]
+        
+        iren = obj
+        
+        shift = iren.GetControlKey()
         #print(user_axis_control)
         if user_axis_control_check() == False:
             print('USER AXIS CONTROL', user_axis_control)
@@ -1333,7 +1337,7 @@ def keypress_callback(obj, event):
                         actor4_position[2] += move_step           
                 
 
-            elif key == '1':           ## REGISTER CMM POSITION
+            elif key == '1' and not shift:           ## REGISTER CMM POSITION
                 print('\nKEY ',key)
                 print('>>> REGISTER CMM POSITION')
                 print('get_local_current_position: ', get_local_current_position(local_axes,local_origin,actor4_position))
@@ -1347,7 +1351,7 @@ def keypress_callback(obj, event):
                 #update_coordinate_window(coord_text_actor, cmm_position)
                 #coord_window.Render()   
 
-            elif key == '2':        ## CREATE 3D LINE
+            elif key == '2' and not shift:        ## CREATE 3D LINE
                 print('\nKEY ',key)
                 print('>>> CREATE 3DLINE')
 
@@ -1362,7 +1366,7 @@ def keypress_callback(obj, event):
                                 path_from_local_to_global_coordinates(local_origin,local_axes,cmm_position[-2]))
             
             ##### CASTRO 08/03/2026 - AGORA TEM PLANO COM AJUSTE DE MÍNIMOS QUADRADOS
-            elif key == '4':
+            elif key == '4' and not shift:
                 print('\nKEY ',key)
                 print('>>> CREATE PLANE MINIMUM SQUARE')
 
@@ -1375,7 +1379,7 @@ def keypress_callback(obj, event):
 
                     create_plane_min_sq(points, 1, 1)
 
-            elif key == '3':
+            elif key == '3' and not shift:
                 print('\nKEY ',key)
                 print('>>> CREATE PLANE')
 
@@ -1770,8 +1774,18 @@ def keypress_callback(obj, event):
                     print(">>> UNKNOWN COMMAND")
                     print(">>> EXIT COMMAND INPUT MODE")
 
+            #elif key == 'lshift':      
+            if iren.GetControlKey():
+                print('\nKEY ',key)
+                print('>>> CONTROL')
+                if iren.GetControlKey() and key =='1':
+                    print('\nKEY ',key)
+                    tracker_measure_time()    
+
             elif key == 'O' or key == 'o':        ## GO TO CENTER VOLUMETRIC LIMITS
-                print('\nKEY 0')
+                print('\nKEY ',key)
+                
+                print('>>> GO TO CENTER')
                 local_current_position = get_local_current_position(local_axes,local_origin,actor4_position)
                 translate = translate_in_volume(actor4_position,
                                                 actor3_position,
@@ -1785,7 +1799,8 @@ def keypress_callback(obj, event):
                 actor2_position = translate[2]
                     
             elif key == 'H' or key == 'h':        ## HOMING FUNCTION
-                print('\nKEY H')
+                print('\nKEY ',key)
+                print('>>> GO TO HOME')
                 local_current_position = get_local_current_position(local_axes,local_origin,actor4_position)
                 new_position = calculate_new_local_coordinates(local_current_position[0],local_current_position[1],0,actor4_position,local_origin,local_current_position)
                 local_linear_path = linear_path(calculate_linear_distance(local_current_position,new_position),local_current_position,new_position,1)
