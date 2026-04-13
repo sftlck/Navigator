@@ -15,10 +15,12 @@ Neste ponto do projeto:
 - [x] Movimentos de translação por CNC
 - [x] Criação de objetos geométricos no espaço
 - [x] Reproduzir o código de cores do Zeiss Calypso :kissing_heart:
-- [ ] Criação de sub-sistemas de coordenadas
+- [x] Emular algoritmos de medição: Trilateração
+- [x] Criação de sub-sistemas de coordenadas
 - [ ] Detecção de intersecção entre objetos na cena (também conhecido como "Apalpar e medir" hahaha)
 - [ ] Implementar ajuste por mínimos quadrados para Linhas
-- [ ] Implementar ajuste por mínimos quadrados para Planos
+- [x] Implementar ajuste por mínimos quadrados para Planos
+- [x] Implementar ajuste por mínimos quadrados para Esferas
 
 ## :eyes: Veja no YouTube! :eyes:
 
@@ -55,9 +57,8 @@ Consulte o arquivo "manual navigator.sty" para visualizar todos os comandos disp
 <img src="img_tutorial_elementos.PNG" alt="Comandos para elementos geométricos" width="500" height="600">
 
 
-
-
 #### Referências:
 - Engrenagem "SPUR D12 Z2 17 AP20" obtida de: https://khkgears2.net/catalog2/SS2-17
 - Modelo .skp da Zeiss Prismo Navigator: [https://3dwarehouse-classic.sketchup.com/model/121100ae-13aa-4d65-8948-68686ba049c9/CMM-Carl-Zeiss-Prismo-Navigator](https://3dwarehouse.sketchup.com/model/121100ae-13aa-4d65-8948-68686ba049c9/CMM-Carl-Zeiss-Prismo-Navigator)
-- Modelo .STL do Leica AT960: [https://grabcad.com/library/leica-at960-laser-tracker-1](https://grabcad.com/library/leica-at960-laser-tracker-1)
+- Modelo .stl do Leica AT960: [https://grabcad.com/library/leica-at960-laser-tracker-1](https://grabcad.com/library/leica-at960-laser-tracker-1)
+- Modelo .stl do KUKA KR10 R1100 [https://grabcad.com/library/kr10_r1100-robot-1](https://grabcad.com/library/kr10_r1100-robot-1)
