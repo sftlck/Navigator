@@ -21,7 +21,9 @@ c =                             100
 cnc_mode_state =                False
 show_volume_bounds =            True
 cmm_position =                  [] 
-sphere_list =                   [] 
+sphere_list =                   []
+add_arm_bool =                  True
+add_trackers_bool =             False
 
 global_volumetric_limits = [230,      # -X
                             775,      # +X
@@ -70,6 +72,10 @@ actor7_position = [750,                                   ## engrenagem
 actor8_position = [350,                                   ## engrenagem
                    2000, 
                    actor3_position[2]   +   310]
+
+actor9_position = [-150,                                   ## engrenagem
+                   500, 
+                   actor3_position[2]]
 
 local_safe_limits = [local_volumetric_limits[0]     +   5      ,   ## deslocamento automático após e_sftlck_state False em check_local_volumetric_limits
                      local_volumetric_limits[1]     -   5      ,
@@ -345,6 +351,8 @@ def calculate_tracker_8(actor4position, tracker_pos):
     return dx, dy, dz, azimuth_deg, zenith_deg
 
 def update_tracker_position2(tracker_list, actor4position, actors_vtk, line_source1,line_source2,line_source3,line_source4):
+
+    if add_trackers_bool == False: return None
     
     if len(tracker_list) > 0:
         result_5 = calculate_tracker_5(actor4position, tracker_list[0])
@@ -1188,7 +1196,7 @@ def create_3dline(p0, p1):
     return actor, lineoutput
 
 def keypress_callback(obj, event):
-        global actor2_position, actor3_position, actor4_position, actor5_position, actor6_position, actor7_position, actor8_position, line_source1,line_source2,line_source3,line_source4
+        global actor2_position, actor3_position, actor4_position, actor5_position, actor6_position, actor7_position, actor8_position, actor9_position, line_source1,line_source2,line_source3,line_source4
         
         global local_volumetric_limits, global_volumetric_limits,camera
         
@@ -1920,13 +1928,12 @@ def keypress_callback(obj, event):
             actor2.SetPosition(*actor2_position)
             actor3.SetPosition(*actor3_position)
             actor4.SetPosition(*actor4_position)
-            actor5.SetPosition(*actor5_position)
             
             update_tracker_position2(actors_list_positions,actor4_position,actors_list, line_source1,line_source2,line_source3,line_source4)
             renderWindow.Render()
 
 def main():
-    global actor2, actor3, actor4, actor5, actor6, actor7,actor8, actor5_1, actor6_1, actor7_1,actor8_1, line_source1,line_source2,line_source3,line_source4
+    global actor2, actor3, actor4, actor5, actor6, actor7,actor8, actor5_1, actor6_1, actor7_1,actor8_1, actor9, line_source1,line_source2,line_source3,line_source4
     global renderWindow, renderer,camera
 
     reader1 = vtk.vtkSTLReader()
@@ -1977,149 +1984,195 @@ def main():
     actor4.SetMapper(mapper4)
     actor4.SetPosition(*actor4_position)
 
-    reader5 = vtk.vtkSTLReader()
-    reader5.SetFileName(r'Leica AT960-interferometer.stl')
-    reader5.Update()
-    mapper5 = vtk.vtkPolyDataMapper()
-    mapper5.SetInputConnection(reader5.GetOutputPort())
-    actor5 = vtk.vtkActor()
-    actor5.SetMapper(mapper5)
-    actor5.SetPosition(*actor5_position)
+    def add_arm():
+        reader9 = vtk.vtkSTLReader()
+        reader9.SetFileName(r'KR10_R1100_sixx_CR.stl')
+        reader9.Update()
+        mapper9 = vtk.vtkPolyDataMapper()
+        mapper9.SetInputConnection(reader9.GetOutputPort())
+        actor9 = vtk.vtkActor()
+        actor9.SetMapper(mapper9)
+        actor9.SetPosition(*actor9_position)
+        renderer.AddActor(actor9)
+    
+    def add_trackers():
+            
+        reader5 = vtk.vtkSTLReader()
+        reader5.SetFileName(r'Leica AT960-interferometer.stl')
+        reader5.Update()
+        mapper5 = vtk.vtkPolyDataMapper()
+        mapper5.SetInputConnection(reader5.GetOutputPort())
+        global actor5
+        actor5 = vtk.vtkActor()
+        actor5.SetMapper(mapper5)
+        actor5.SetPosition(*actor5_position)
+
+        global actor5_1
+        reader5_1 = vtk.vtkSTLReader()
+        reader5_1.SetFileName(r'Leica AT960-body.stl')
+        reader5_1.Update()
+        mapper5_1 = vtk.vtkPolyDataMapper()
+        mapper5_1.SetInputConnection(reader5_1.GetOutputPort())
+        actor5_1 = vtk.vtkActor()
+        actor5_1.SetMapper(mapper5_1)
+        actor5_1.SetPosition(*actor5_position)
+
+        global actor6
+        reader6 = vtk.vtkSTLReader()
+        reader6.SetFileName(r'Leica AT960-interferometer.stl')
+        reader6.Update()
+        mapper6 = vtk.vtkPolyDataMapper()
+        mapper6.SetInputConnection(reader6.GetOutputPort())
+        actor6 = vtk.vtkActor()
+        actor6.SetMapper(mapper6)
+        actor6.SetPosition(*actor6_position)
+
+        global actor6_1
+        reader6_1 = vtk.vtkSTLReader()
+        reader6_1.SetFileName(r'Leica AT960-body.stl')
+        reader6_1.Update()
+        mapper6_1 = vtk.vtkPolyDataMapper()
+        mapper6_1.SetInputConnection(reader6_1.GetOutputPort())
+        actor6_1 = vtk.vtkActor()
+        actor6_1.SetMapper(mapper6_1)
+        actor6_1.SetPosition(*actor6_position)
         
-    reader5_1 = vtk.vtkSTLReader()
-    reader5_1.SetFileName(r'Leica AT960-body.stl')
-    reader5_1.Update()
-    mapper5_1 = vtk.vtkPolyDataMapper()
-    mapper5_1.SetInputConnection(reader5_1.GetOutputPort())
-    actor5_1 = vtk.vtkActor()
-    actor5_1.SetMapper(mapper5_1)
-    actor5_1.SetPosition(*actor5_position)
+        dx = actor4_position[0] - actor6_position[0]
+        dy = actor4_position[1] - actor6_position[1]
+        dz = actor4_position[2] - actor6_position[2]
+        azimuth_deg = np.degrees(-np.arctan2(dx, dy))
+        dist_horizontal = np.sqrt(dx**2 + dy**2)
+        zenith_rad = np.arctan2(dz, dist_horizontal)
+        zenith_deg = np.degrees(zenith_rad)
+        print(f' >>> TRACKER {i + 5}')
+        print('> Delta X, Y, Z:', dx,dy,dz)
+        print('> AZIMUTH:', azimuth_deg)
+        print('> ZENITH:', zenith_deg,'\n')
+        actor6.SetOrientation(zenith_deg, 0, azimuth_deg)
 
-    reader6 = vtk.vtkSTLReader()
-    reader6.SetFileName(r'Leica AT960-interferometer.stl')
-    reader6.Update()
-    mapper6 = vtk.vtkPolyDataMapper()
-    mapper6.SetInputConnection(reader6.GetOutputPort())
-    actor6 = vtk.vtkActor()
-    actor6.SetMapper(mapper6)
-    actor6.SetPosition(*actor6_position)
+        global actor7
+        reader7 = vtk.vtkSTLReader()
+        reader7.SetFileName(r'Leica AT960-interferometer.stl')
+        reader7.Update()
+        mapper7 = vtk.vtkPolyDataMapper()
+        mapper7.SetInputConnection(reader7.GetOutputPort())
+        actor7 = vtk.vtkActor()
+        actor7.SetMapper(mapper7)
+        actor7.SetPosition(*actor7_position)
 
-    reader6_1 = vtk.vtkSTLReader()
-    reader6_1.SetFileName(r'Leica AT960-body.stl')
-    reader6_1.Update()
-    mapper6_1 = vtk.vtkPolyDataMapper()
-    mapper6_1.SetInputConnection(reader6_1.GetOutputPort())
-    actor6_1 = vtk.vtkActor()
-    actor6_1.SetMapper(mapper6_1)
-    actor6_1.SetPosition(*actor6_position)
-       
-    dx = actor4_position[0] - actor6_position[0]
-    dy = actor4_position[1] - actor6_position[1]
-    dz = actor4_position[2] - actor6_position[2]
-    azimuth_deg = np.degrees(-np.arctan2(dx, dy))
-    dist_horizontal = np.sqrt(dx**2 + dy**2)
-    zenith_rad = np.arctan2(dz, dist_horizontal)
-    zenith_deg = np.degrees(zenith_rad)
-    print(f' >>> TRACKER {i + 5}')
-    print('> Delta X, Y, Z:', dx,dy,dz)
-    print('> AZIMUTH:', azimuth_deg)
-    print('> ZENITH:', zenith_deg,'\n')
-    actor6.SetOrientation(zenith_deg, 0, azimuth_deg)
+        global actor7_1        
+        reader7_1 = vtk.vtkSTLReader()
+        reader7_1.SetFileName(r'Leica AT960-body.stl')
+        reader7_1.Update()
+        mapper7_1 = vtk.vtkPolyDataMapper()
+        mapper7_1.SetInputConnection(reader7_1.GetOutputPort())
+        actor7_1 = vtk.vtkActor()
+        actor7_1.SetMapper(mapper7_1)
+        actor7_1.SetPosition(*actor7_position)
 
-    reader7 = vtk.vtkSTLReader()
-    reader7.SetFileName(r'Leica AT960-interferometer.stl')
-    reader7.Update()
-    mapper7 = vtk.vtkPolyDataMapper()
-    mapper7.SetInputConnection(reader7.GetOutputPort())
-    actor7 = vtk.vtkActor()
-    actor7.SetMapper(mapper7)
-    actor7.SetPosition(*actor7_position)
-    
-    reader7_1 = vtk.vtkSTLReader()
-    reader7_1.SetFileName(r'Leica AT960-body.stl')
-    reader7_1.Update()
-    mapper7_1 = vtk.vtkPolyDataMapper()
-    mapper7_1.SetInputConnection(reader7_1.GetOutputPort())
-    actor7_1 = vtk.vtkActor()
-    actor7_1.SetMapper(mapper7_1)
-    actor7_1.SetPosition(*actor7_position)
+        dx = actor4_position[0] - actor7_position[0]
+        dy = actor4_position[1] - actor7_position[1]
+        dz = actor4_position[2] - actor7_position[2]
+        azimuth_deg = np.degrees(-np.arctan2(dx, dy))
+        dist_horizontal = np.sqrt(dx**2 + dy**2)
+        zenith_rad = np.arctan2(dz, dist_horizontal)
+        zenith_deg = np.degrees(zenith_rad)
+        print(f' >>> TRACKER {i + 5}')
+        print('> Delta X, Y, Z:', dx,dy,dz)
+        print('> AZIMUTH:', azimuth_deg)
+        print('> ZENITH:', zenith_deg,'\n')
+        actor7.SetOrientation(zenith_deg, 0, azimuth_deg)
 
-    dx = actor4_position[0] - actor7_position[0]
-    dy = actor4_position[1] - actor7_position[1]
-    dz = actor4_position[2] - actor7_position[2]
-    azimuth_deg = np.degrees(-np.arctan2(dx, dy))
-    dist_horizontal = np.sqrt(dx**2 + dy**2)
-    zenith_rad = np.arctan2(dz, dist_horizontal)
-    zenith_deg = np.degrees(zenith_rad)
-    print(f' >>> TRACKER {i + 5}')
-    print('> Delta X, Y, Z:', dx,dy,dz)
-    print('> AZIMUTH:', azimuth_deg)
-    print('> ZENITH:', zenith_deg,'\n')
-    actor7.SetOrientation(zenith_deg, 0, azimuth_deg)
+        global actor8
+        reader8 = vtk.vtkSTLReader()
+        reader8.SetFileName(r'Leica AT960-interferometer.stl')
+        reader8.Update()
+        mapper8 = vtk.vtkPolyDataMapper()
+        mapper8.SetInputConnection(reader8.GetOutputPort())
+        actor8 = vtk.vtkActor()
+        actor8.SetMapper(mapper8)
+        actor8.SetPosition(*actor8_position)
 
+        global actor8_1
+        reader8_1 = vtk.vtkSTLReader()
+        reader8_1.SetFileName(r'Leica AT960-body.stl')
+        reader8_1.Update()
+        mapper8_1 = vtk.vtkPolyDataMapper()
+        mapper8_1.SetInputConnection(reader8_1.GetOutputPort())
+        actor8_1 = vtk.vtkActor()
+        actor8_1.SetMapper(mapper8_1)
+        actor8_1.SetPosition(*actor8_position)
 
-    reader8 = vtk.vtkSTLReader()
-    reader8.SetFileName(r'Leica AT960-interferometer.stl')
-    reader8.Update()
-    mapper8 = vtk.vtkPolyDataMapper()
-    mapper8.SetInputConnection(reader8.GetOutputPort())
-    actor8 = vtk.vtkActor()
-    actor8.SetMapper(mapper8)
-    actor8.SetPosition(*actor8_position)
+        dx = actor4_position[0] - actor8_position[0]
+        dy = actor4_position[1] - actor8_position[1]
+        dz = actor4_position[2] - actor8_position[2]
+        azimuth_deg = np.degrees(-np.arctan2(dx, dy))
+        dist_horizontal = np.sqrt(dx**2 + dy**2)
+        zenith_rad = np.arctan2(dz, dist_horizontal)
+        zenith_deg = np.degrees(zenith_rad)
+        print(f' >>> TRACKER {i + 5}')
+        print('> Delta X, Y, Z:', dx,dy,dz)
+        print('> AZIMUTH:', azimuth_deg)
+        print('> ZENITH:', zenith_deg,'\n')
+        actor8.SetOrientation(zenith_deg, 0, azimuth_deg)
 
-    reader8_1 = vtk.vtkSTLReader()
-    reader8_1.SetFileName(r'Leica AT960-body.stl')
-    reader8_1.Update()
-    mapper8_1 = vtk.vtkPolyDataMapper()
-    mapper8_1.SetInputConnection(reader8_1.GetOutputPort())
-    actor8_1 = vtk.vtkActor()
-    actor8_1.SetMapper(mapper8_1)
-    actor8_1.SetPosition(*actor8_position)
+        global line_source1
+        line_source1 = vtk.vtkLineSource()
+        line_mapper1 = vtk.vtkPolyDataMapper()
+        line_mapper1.SetInputConnection(line_source1.GetOutputPort())
+        line_actor1 = vtk.vtkActor()
+        line_actor1.SetMapper(line_mapper1)
+        line_actor1.GetProperty().SetColor(1, 0, 0) 
+        line_actor1.GetProperty().SetLineWidth(1)
 
-    dx = actor4_position[0] - actor8_position[0]
-    dy = actor4_position[1] - actor8_position[1]
-    dz = actor4_position[2] - actor8_position[2]
-    azimuth_deg = np.degrees(-np.arctan2(dx, dy))
-    dist_horizontal = np.sqrt(dx**2 + dy**2)
-    zenith_rad = np.arctan2(dz, dist_horizontal)
-    zenith_deg = np.degrees(zenith_rad)
-    print(f' >>> TRACKER {i + 5}')
-    print('> Delta X, Y, Z:', dx,dy,dz)
-    print('> AZIMUTH:', azimuth_deg)
-    print('> ZENITH:', zenith_deg,'\n')
-    actor8.SetOrientation(zenith_deg, 0, azimuth_deg)
+        global line_source2
+        line_source2 = vtk.vtkLineSource()
+        line_mapper2 = vtk.vtkPolyDataMapper()
+        line_mapper2.SetInputConnection(line_source2.GetOutputPort())
+        line_actor2 = vtk.vtkActor()
+        line_actor2.SetMapper(line_mapper2)
+        line_actor2.GetProperty().SetColor(1, 0, 0) 
+        line_actor2.GetProperty().SetLineWidth(1)
+        
+        global line_source3
+        line_source3 = vtk.vtkLineSource()
+        line_mapper3 = vtk.vtkPolyDataMapper()
+        line_mapper3.SetInputConnection(line_source3.GetOutputPort())
+        line_actor3 = vtk.vtkActor()
+        line_actor3.SetMapper(line_mapper3)
+        line_actor3.GetProperty().SetColor(1, 0, 0) 
+        line_actor3.GetProperty().SetLineWidth(1)
 
-    line_source1 = vtk.vtkLineSource()
-    line_mapper1 = vtk.vtkPolyDataMapper()
-    line_mapper1.SetInputConnection(line_source1.GetOutputPort())
-    line_actor1 = vtk.vtkActor()
-    line_actor1.SetMapper(line_mapper1)
-    line_actor1.GetProperty().SetColor(1, 0, 0) 
-    line_actor1.GetProperty().SetLineWidth(1)
+        global line_source4
+        line_source4 = vtk.vtkLineSource()
+        line_mapper4 = vtk.vtkPolyDataMapper()
+        line_mapper4.SetInputConnection(line_source4.GetOutputPort())
+        line_actor4 = vtk.vtkActor()
+        line_actor4.SetMapper(line_mapper4)
+        line_actor4.GetProperty().SetColor(1, 0, 0) 
+        line_actor4.GetProperty().SetLineWidth(1)
+        
+        renderer.AddActor(actor5)
+        renderer.AddActor(actor5_1)
+        renderer.AddActor(actor6)
+        renderer.AddActor(actor6_1)
+        renderer.AddActor(actor7)
+        renderer.AddActor(actor7_1)
+        renderer.AddActor(actor8)
+        renderer.AddActor(actor8_1)
+        renderer.AddActor(line_actor1)
+        renderer.AddActor(line_actor2)
+        renderer.AddActor(line_actor3)
+        renderer.AddActor(line_actor4)
 
-    line_source2 = vtk.vtkLineSource()
-    line_mapper2 = vtk.vtkPolyDataMapper()
-    line_mapper2.SetInputConnection(line_source2.GetOutputPort())
-    line_actor2 = vtk.vtkActor()
-    line_actor2.SetMapper(line_mapper2)
-    line_actor2.GetProperty().SetColor(1, 0, 0) 
-    line_actor2.GetProperty().SetLineWidth(1)
-    
-    line_source3 = vtk.vtkLineSource()
-    line_mapper3 = vtk.vtkPolyDataMapper()
-    line_mapper3.SetInputConnection(line_source3.GetOutputPort())
-    line_actor3 = vtk.vtkActor()
-    line_actor3.SetMapper(line_mapper3)
-    line_actor3.GetProperty().SetColor(1, 0, 0) 
-    line_actor3.GetProperty().SetLineWidth(1)
-
-    line_source4 = vtk.vtkLineSource()
-    line_mapper4 = vtk.vtkPolyDataMapper()
-    line_mapper4.SetInputConnection(line_source4.GetOutputPort())
-    line_actor4 = vtk.vtkActor()
-    line_actor4.SetMapper(line_mapper4)
-    line_actor4.GetProperty().SetColor(1, 0, 0) 
-    line_actor4.GetProperty().SetLineWidth(1)
+        actor5.SetScale(1000,1000,1000)
+        actor6.SetScale(1000,1000,1000)
+        actor7.SetScale(1000,1000,1000)
+        actor8.SetScale(1000,1000,1000)
+        actor5_1.SetScale(1000,1000,1000)
+        actor6_1.SetScale(1000,1000,1000)
+        actor7_1.SetScale(1000,1000,1000)
+        actor8_1.SetScale(1000,1000,1000)
 
     renderer = vtk.vtkRenderer()
     renderWindow = vtk.vtkRenderWindow()
@@ -2139,19 +2192,6 @@ def main():
     renderer.AddActor(actor3)
     renderer.AddActor(actor4)
     renderer.AddActor(actor4)
-    renderer.AddActor(actor5)
-    renderer.AddActor(actor5_1)
-    renderer.AddActor(actor6)
-    renderer.AddActor(actor6_1)
-    renderer.AddActor(actor7)
-    renderer.AddActor(actor7_1)
-    renderer.AddActor(actor8)
-    renderer.AddActor(actor8_1)
-
-    renderer.AddActor(line_actor1)
-    renderer.AddActor(line_actor2)
-    renderer.AddActor(line_actor3)
-    renderer.AddActor(line_actor4)
       
     colors = vtk.vtkNamedColors()
 
@@ -2166,21 +2206,26 @@ def main():
     actor1.SetScale(scale,scale,scale)
     actor1.RotateZ(90)
     actor4.SetScale(scale,scale,scale)
-    actor5.SetScale(1000,1000,1000)
-    actor6.SetScale(1000,1000,1000)
-    actor7.SetScale(1000,1000,1000)
-    actor8.SetScale(1000,1000,1000)
-    actor5_1.SetScale(1000,1000,1000)
-    actor6_1.SetScale(1000,1000,1000)
-    actor7_1.SetScale(1000,1000,1000)
-    actor8_1.SetScale(1000,1000,1000)
     actor2.SetScale(scale,scale,scale)
-    #actor5.RotateZ(90)
-    #actor5.RotateX(90)
-    #actor5.RotateY(90)
     actor2.RotateZ(90)
+    
 
-    #actor5.RotateZ(135)
+    if add_arm_bool == True: add_arm()
+    if add_trackers_bool == True: 
+        add_trackers()
+    else:
+        actor5 =        create_sphere((0,0,0),1,(0,0,0),1)
+        actor5_1 =      create_sphere((0,0,0),1,(0,0,0),1)
+        actor6 =        create_sphere((0,0,0),1,(0,0,0),1)
+        actor6_1 =      create_sphere((0,0,0),1,(0,0,0),1)
+        actor7 =        create_sphere((0,0,0),1,(0,0,0),1)
+        actor7_1 =      create_sphere((0,0,0),1,(0,0,0),1)
+        actor8 =        create_sphere((0,0,0),1,(0,0,0),1)
+        actor8_1 =      create_sphere((0,0,0),1,(0,0,0),1)
+        line_source1 =  create_sphere((0,0,0),1,(0,0,0),1)
+        line_source2 =  create_sphere((0,0,0),1,(0,0,0),1)
+        line_source3 =  create_sphere((0,0,0),1,(0,0,0),1)
+        line_source4 =  create_sphere((0,0,0),1,(0,0,0),1)
 
     axes = vtk.vtkAxesActor()
     axes.SetTotalLength(scale*100,scale*100,scale*100) 
