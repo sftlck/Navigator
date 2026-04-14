@@ -54,7 +54,7 @@ Para instalar o Navigator, siga estas etapas:
 Consulte o arquivo "manual navigator.sty" para visualizar todos os comandos disponíveis. Abaixo estão os comandos simples para controle da máquina e criação de elementos geométricos
 
 <img src="img_tutorial_movimento.PNG" alt="Comandos para movimento" width="500" height="600">
-<img src="img_tutorial_elementos.PNG" alt="Comandos para elementos geométricos" width="500" height="600">
+<img src="img_tutorial_elementos.png" alt="Comandos para elementos geométricos" width="500" height="600">
 <img src="img_visualizacao.PNG" alt="Comandos para visualização em modo CNC" width="500" height="600">
 
 #### Referências:
