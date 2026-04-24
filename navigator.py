@@ -13,8 +13,8 @@ from vtkmodules.vtkCommonColor import vtkNamedColors
 move_step =                     10
 speed =                         640
 e_sftlck_state =                False
-scale =                         0.75
-override_pos_limits_flag =      0
+scale =                         1
+override_pos_limits_flag =      1
 user_axis_control =             True
 i =                             0
 c =                             100
@@ -22,36 +22,38 @@ cnc_mode_state =                False
 show_volume_bounds =            True
 cmm_position =                  [] 
 sphere_list =                   []
-add_arm_bool =                  False
-add_trackers_bool =             False
+add_arm_bool =                  True
+add_trackers_bool =             True
 
-global_volumetric_limits = [230,      # -X
-                            775,      # +X
-                            170,      # -Y
-                            1200,     # +Y
-                            600,      # -Z
-                            1130]     # +Z
+global_volumetric_limits = [265,      # -X
+                            1105,     # +X
+                            340,      # -Y
+                            1650,     # +Y
+                            810,      # -Z
+                            1510]     # +Z
 
-local_volumetric_limits = [0        ,     # -X
-                           755      ,     # +X
-                           -1005    ,     # -Y
-                           5        ,     # +Y
-                           -540     ,     # -Z
-                           5]             # +Z
+local_volumetric_limits = [0                                                            ,     # -X
+                           global_volumetric_limits[1] * 0.8                            ,     # +X
+                           -(global_volumetric_limits[3]-global_volumetric_limits[2])   ,     # -Y
+                           10                                                           ,     # +Y
+                           -(global_volumetric_limits[5]-global_volumetric_limits[4])   ,     # -Z
+                           10]                                                                # +Z
 
-actor1_position = [0,0,0]                               ## desempeno
+actor1_position = [0    ,
+                   0    ,
+                   0]                               ## desempeno
 
-actor4_position = [315,                                 ## cabeçote
-                   1039.5,
+actor4_position = [455      ,                                 ## cabeçote
+                   1039.5   ,
                    1080]                                #### POSIÇÃO INICIAL EM Z
 
-actor3_position = [actor4_position[0]   -   310,        ## ponte
+actor3_position = [actor4_position[0]   -   455,        ## ponte
                    actor4_position[1]   +   60,         #### POSIÇÃO INICIAL EM Y
-                   actor4_position[2]   -   480]
+                   actor4_position[2]   -   280]
 
-actor2_position = [actor4_position[0]   -   150,        ## capa do z    #### POSIÇÃO INICIAL EM X
-                   actor4_position[1]   +   360,
-                   actor4_position[2]   +   180]
+actor2_position = [actor4_position[0]   -   190,        ## capa do z    #### POSIÇÃO INICIAL EM X
+                   actor4_position[1]   +   460,
+                   actor4_position[2]   +   605]
 
 #actor5_position = [1000,                                ## esfera
 #                   1000, 
@@ -66,11 +68,11 @@ actor6_position = [750,                                   ## engrenagem
                    actor3_position[2]   +   310]
 
 actor7_position = [750,                                   ## engrenagem
-                   2000, 
+                   2500, 
                    actor3_position[2]   +   310]
 
 actor8_position = [350,                                   ## engrenagem
-                   2000, 
+                   2750, 
                    actor3_position[2]   +   310]
 
 actor9_position = [-150,                                   ## engrenagem
@@ -213,13 +215,13 @@ def sync_actors_movement(actor4_position,actor3_position,actor2_position,pos):
 
     actor4_position = pos                         #### POSIÇÃO INICIAL EM Z
 
-    actor3_position = [actor3_position[0]           ,              ## ponte
-                       actor4_position[1]      +   60.5,                           #### POSIÇÃO INICIAL EM Y
+    actor3_position = [actor3_position[0]   ,              ## ponte
+                       actor4_position[1]   +   60,                           #### POSIÇÃO INICIAL EM Y
                        actor3_position[2]]
 
 
-    actor2_position = [actor4_position[0]   -   150,            ## capa do z    #### POSIÇÃO INICIAL EM X
-                       actor4_position[1]      +   360,
+    actor2_position = [actor4_position[0]   -   190,            ## capa do z    #### POSIÇÃO INICIAL EM X
+                       actor4_position[1]   +   460,
                        actor2_position[2]]
 
     return actor4_position, actor3_position, actor2_position
@@ -1345,7 +1347,7 @@ def keypress_callback(obj, event):
                 create_sphere((actor4_position[0],
                                                  actor4_position[1],
                                                  actor4_position[2]),
-                                                 4,
+                                                 5,
                                                  (0,0,0.75))
                 cmm_position.append(get_local_current_position(local_axes,local_origin,actor4_position))
                 #update_coordinate_window(coord_text_actor, cmm_position)
@@ -1406,15 +1408,14 @@ def keypress_callback(obj, event):
 
                 DEMO = [
                         (10,-10,-10),               # HOMING
-                        (570, -910, -460),          ## CANTO FRENTE ESQUERDA
-                        (10, -910, -460),           ## CANTO FRENTE DIREITA
-                        (610, -20, -10),            ## FUNDO ALTO DIREITA
-                        (570, -20, -50),            ## BAIXA TRIÂNGULO
-                        (530, -20, -10),            ## FUNDO ALTO MÉDIO DIRETIA
+                        (local_volumetric_limits[1]*0.9,   local_volumetric_limits[2]*0.9, local_volumetric_limits[4]*0.9),          ## CANTO FRENTE ESQUERDA
+                        (10,    local_volumetric_limits[2]*0.9, local_volumetric_limits[4]*0.9),           ## CANTO FRENTE DIREITA
+                        (local_volumetric_limits[1]*0.9, local_volumetric_limits[3]-20, local_volumetric_limits[5]),            ## FUNDO ALTO DIREITA
+                        (local_volumetric_limits[1]*0.8, local_volumetric_limits[3]-20, local_volumetric_limits[5]-50),            ## BAIXA TRIÂNGULO
+                        (local_volumetric_limits[1]*0.7, local_volumetric_limits[3]-20, local_volumetric_limits[5]),            ## FUNDO ALTO MÉDIO DIRETIA
                         (10, -10, -10)              ### REPETE
                         ]
                 #KEY UP global_actor4_position  [770. 260. 640.] / local_current_position  [ 570. -910. -460.]
-
 
                 for c in range(cycles):
                     for i in DEMO:
@@ -1780,7 +1781,7 @@ def keypress_callback(obj, event):
                 print('>>> CONTROL')
                 if iren.GetControlKey() and key =='1':
                     print('\nKEY ',key)
-                    tracker_measure_time()    
+                    #tracker_distance()    
 
             elif key == 'O' or key == 'o':        ## GO TO CENTER VOLUMETRIC LIMITS
                 print('\nKEY ',key)
@@ -2013,7 +2014,7 @@ def main():
     def add_trackers():
             
         reader5 = vtk.vtkSTLReader()
-        reader5.SetFileName(r'Leica AT960-interferometer.stl')
+        reader5.SetFileName(r'Leica AT960-interferometer_s.stl')
         reader5.Update()
         mapper5 = vtk.vtkPolyDataMapper()
         mapper5.SetInputConnection(reader5.GetOutputPort())
@@ -2024,7 +2025,7 @@ def main():
 
         global actor5_1
         reader5_1 = vtk.vtkSTLReader()
-        reader5_1.SetFileName(r'Leica AT960-body.stl')
+        reader5_1.SetFileName(r'Leica AT960-body_s.stl')
         reader5_1.Update()
         mapper5_1 = vtk.vtkPolyDataMapper()
         mapper5_1.SetInputConnection(reader5_1.GetOutputPort())
@@ -2034,7 +2035,7 @@ def main():
 
         global actor6
         reader6 = vtk.vtkSTLReader()
-        reader6.SetFileName(r'Leica AT960-interferometer.stl')
+        reader6.SetFileName(r'Leica AT960-interferometer_s.stl')
         reader6.Update()
         mapper6 = vtk.vtkPolyDataMapper()
         mapper6.SetInputConnection(reader6.GetOutputPort())
@@ -2044,7 +2045,7 @@ def main():
 
         global actor6_1
         reader6_1 = vtk.vtkSTLReader()
-        reader6_1.SetFileName(r'Leica AT960-body.stl')
+        reader6_1.SetFileName(r'Leica AT960-body_s.stl')
         reader6_1.Update()
         mapper6_1 = vtk.vtkPolyDataMapper()
         mapper6_1.SetInputConnection(reader6_1.GetOutputPort())
@@ -2067,7 +2068,7 @@ def main():
 
         global actor7
         reader7 = vtk.vtkSTLReader()
-        reader7.SetFileName(r'Leica AT960-interferometer.stl')
+        reader7.SetFileName(r'Leica AT960-interferometer_s.stl')
         reader7.Update()
         mapper7 = vtk.vtkPolyDataMapper()
         mapper7.SetInputConnection(reader7.GetOutputPort())
@@ -2077,7 +2078,7 @@ def main():
 
         global actor7_1        
         reader7_1 = vtk.vtkSTLReader()
-        reader7_1.SetFileName(r'Leica AT960-body.stl')
+        reader7_1.SetFileName(r'Leica AT960-body_s.stl')
         reader7_1.Update()
         mapper7_1 = vtk.vtkPolyDataMapper()
         mapper7_1.SetInputConnection(reader7_1.GetOutputPort())
@@ -2100,7 +2101,7 @@ def main():
 
         global actor8
         reader8 = vtk.vtkSTLReader()
-        reader8.SetFileName(r'Leica AT960-interferometer.stl')
+        reader8.SetFileName(r'Leica AT960-interferometer_s.stl')
         reader8.Update()
         mapper8 = vtk.vtkPolyDataMapper()
         mapper8.SetInputConnection(reader8.GetOutputPort())
@@ -2110,7 +2111,7 @@ def main():
 
         global actor8_1
         reader8_1 = vtk.vtkSTLReader()
-        reader8_1.SetFileName(r'Leica AT960-body.stl')
+        reader8_1.SetFileName(r'Leica AT960-body_s.stl')
         reader8_1.Update()
         mapper8_1 = vtk.vtkPolyDataMapper()
         mapper8_1.SetInputConnection(reader8_1.GetOutputPort())
@@ -2180,14 +2181,14 @@ def main():
         renderer.AddActor(line_actor3)
         renderer.AddActor(line_actor4)
 
-        actor5.SetScale(1000,1000,1000)
-        actor6.SetScale(1000,1000,1000)
-        actor7.SetScale(1000,1000,1000)
-        actor8.SetScale(1000,1000,1000)
-        actor5_1.SetScale(1000,1000,1000)
-        actor6_1.SetScale(1000,1000,1000)
-        actor7_1.SetScale(1000,1000,1000)
-        actor8_1.SetScale(1000,1000,1000)
+        #actor5.SetScale(1000,1000,1000)
+        #actor6.SetScale(1000,1000,1000)
+        #actor7.SetScale(1000,1000,1000)
+        #actor8.SetScale(1000,1000,1000)
+        #actor5_1.SetScale(1000,1000,1000)
+        #actor6_1.SetScale(1000,1000,1000)
+        #actor7_1.SetScale(1000,1000,1000)
+        #actor8_1.SetScale(1000,1000,1000)
 
     renderer = vtk.vtkRenderer()
     renderWindow = vtk.vtkRenderWindow()
