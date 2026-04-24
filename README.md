@@ -45,8 +45,9 @@ Atenção! O projeto foi desenvolvido em um computador com as seguintes especifi
 
 Para instalar o Navigator, siga estas etapas:
 
-- Baixe os 5 arquivos em formato .STL
-- Baixe o arquivo Navigator.py e deixe-o no mesmo diretório dos arquivos .STL
+- Baixe o repositório
+- Deixe todos os arquivos no mesmo diretório
+- Instale as dependências
 - Execute o código!
 
 ## Usando Navigator
