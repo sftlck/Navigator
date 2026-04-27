@@ -3,10 +3,10 @@ import time as t
 import numpy as np
 import pyautogui as pg
 
-from vtkmodules.vtkFiltersSources import vtkPlaneSource
-from vtkmodules.vtkFiltersCore import vtkFeatureEdges
-from vtkmodules.vtkFiltersSources import vtkRegularPolygonSource
-from vtkmodules.vtkRenderingCore import (vtkActor,vtkPolyDataMapper)
+from vtkmodules.vtkFiltersSources   import vtkPlaneSource
+from vtkmodules.vtkFiltersCore      import vtkFeatureEdges
+from vtkmodules.vtkFiltersSources   import vtkRegularPolygonSource
+from vtkmodules.vtkRenderingCore    import (vtkActor,vtkPolyDataMapper)
 
 from vtkmodules.vtkCommonColor import vtkNamedColors
 
@@ -22,7 +22,7 @@ cnc_mode_state =                False
 show_volume_bounds =            True
 cmm_position =                  [] 
 sphere_list =                   []
-add_arm_bool =                  True
+add_arm_bool =                  False
 add_trackers_bool =             True
 
 global_volumetric_limits = [265,      # -X
@@ -59,23 +59,23 @@ actor2_position = [actor4_position[0]   -   190,        ## capa do z    #### POS
 #                   1000, 
 #                   actor3_position[2]   +   210]
 
-actor5_position = [0,                                ## esfera
+actor5_position = [0,                                       ## TRACKER ESQUERDA EMBAIXO
                    0, 
                    actor3_position[2]   +   310]
 
-actor6_position = [750,                                   ## engrenagem
+actor6_position = [750,                                     ## TRACKER DIREITA EMBAIXO
                    -600, 
                    actor3_position[2]   +   310]
 
-actor7_position = [750,                                   ## engrenagem
+actor7_position = [750,                                     ## engrenagem
                    2500, 
                    actor3_position[2]   +   310]
 
-actor8_position = [350,                                   ## engrenagem
+actor8_position = [350,                                     ## engrenagem
                    2750, 
                    actor3_position[2]   +   310]
 
-actor9_position = [-150,                                   ## engrenagem
+actor9_position = [-150,                                    ## BRAÇO DE MEDIÇÃO
                    500, 
                    actor3_position[2]]
 
@@ -235,8 +235,10 @@ def path_from_local_to_global_coordinates(local_origin,local_axes,local_linear_p
 def calculate_linear_distance(local_current_position,new_position):
     print('\n> CALCULATING LINEAR DISTANCE')
     #distance = new_position - local_current_position
+    local_current_position = np.array(local_current_position)
+    new_position = np.array(new_position)
     distance = np.linalg.norm(new_position - local_current_position)
-    print(float(distance))
+    print('>RESULT: ',float(distance))
     return float(distance)
 
 def calculate_axis_distance(local_current_position,new_position):
@@ -929,7 +931,22 @@ def create_plane_params(a, b, c, sphere_center, opacity, sceneNormalactor=1):
     
     return actor, planeNormal, planeSource, center
 
-import numpy as np
+def sphere_intersections_3_trackers(actor5_position,actor6_position,actor7_position,actor8_position,actor4_position):
+    print('>>> SPHERE INTERSECTIONS 3')
+
+    r5 = calculate_linear_distance((actor5_position[0],actor5_position[1],actor5_position[2]),(actor4_position[0],actor4_position[1],actor4_position[2]))
+    r6 = calculate_linear_distance((actor6_position[0],actor6_position[1],actor6_position[2]),(actor4_position[0],actor4_position[1],actor4_position[2]))
+    r7 = calculate_linear_distance((actor7_position[0],actor7_position[1],actor7_position[2]),(actor4_position[0],actor4_position[1],actor4_position[2]))
+    r8 = calculate_linear_distance((actor8_position[0],actor8_position[1],actor8_position[2]),(actor4_position[0],actor4_position[1],actor4_position[2]))
+
+    sphere_actor5, center,radius = create_sphere2((actor5_position[0],actor5_position[1],actor5_position[2]),r5, (0.75,0,0.75), 0.05)
+    sphere_list.append((center,radius))
+    sphere_actor6, center,radius = create_sphere2((actor6_position[0],actor6_position[1],actor6_position[2]),r6, (0.75,0,0.75), 0.05)
+    sphere_list.append((center,radius))
+    sphere_actor7, center,radius = create_sphere2((actor7_position[0],actor7_position[1],actor7_position[2]),r7, (0.75,0,0.75), 0.05)
+    sphere_list.append((center,radius))
+    sphere_actor8, center,radius = create_sphere((actor8_position[0],actor8_position[1],actor8_position[2]),r8, (0.75,0,0.75), 0.05)
+    sphere_list.append((center,radius))
 
 def sphere_intersections_3(sphere_list_a):
     if len(sphere_list_a) < 3:
@@ -1882,6 +1899,12 @@ def keypress_callback(obj, event):
                     
                     x,y,z,r = sphere
                     create_sphere((x,y,z), r, (1,1,1), 0.2)
+
+            elif key == 'Y' or key == 'y':  
+                print('\nKEY ',key)
+                print('>>> SPHERE INTERSECTIONS: LASER TRACKERS')
+                
+                sphere_intersections_3_trackers(actor5_position,actor6_position,actor7_position,actor8_position,actor4_position)
 
             elif key == 'T' or key == 't':  
 
